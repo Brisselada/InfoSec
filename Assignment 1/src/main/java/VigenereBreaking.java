@@ -15,9 +15,8 @@ public class VigenereBreaking {
             int upperBound = Integer.parseInt(br.readLine());
 
             System.out.println("Please enter plaintext:");
-            //TODO: Grote input handlen
+            //TODO: Grote input handlen van console
 //            String cipherText = br.readLine();
-//            String cipherText = "";
             String cipherText = Files.readString(Path.of("src\\main\\resources\\textToBreak.txt"), StandardCharsets.US_ASCII);
 
             //            for (String line = br.readLine(); line != null; line = br.readLine()) {
@@ -25,15 +24,7 @@ public class VigenereBreaking {
 //                System.out.println("Line is " + line);
 //                cipherText += line;
 //            }
-            System.out.println("Finished reading");
             guessKey(lowerBound, upperBound, cipherText);
-            br.readLine();
-
-//            for (String line = br.readLine(); line != null; line = br.readLine()) {
-//                //TODO: Op een bepaald punt sluiten
-//                handleMessage(requests, line);
-//            }
-
             br.close();
 
         } catch (Exception e) {
@@ -42,11 +33,8 @@ public class VigenereBreaking {
     }
 
     public static void guessKey(int lowerBound, int upperBound, String cipherText) {
-        // Voor elke sleutellengte: per positie een vector van 26 met frequency voor elke letter
-        //
         String abc = "abcdefghijklmnopqrstuvwxyz";
         char[] arr = cipherText.toCharArray();
-        int keyCount = 0;
         int charIndex;
         char currentChar;
         int bestKeyLength = 0;
@@ -55,6 +43,7 @@ public class VigenereBreaking {
 
         for (int keyLength = lowerBound; keyLength <= upperBound; keyLength++) {
 
+            int keyCount = 0;
             double totalStdDev = 0;
 
             int[][] doubleArray = new int[keyLength][26];
@@ -62,18 +51,16 @@ public class VigenereBreaking {
             // Count letter frequency per key position
             for (int j = 0; j < arr.length; j++) {
                 if (!Character.isLetter(arr[j]) || arr[j] == '\r' || arr[j] == '\n') {
-//                    j++;
                     continue;
                 }
                 currentChar = Character.toLowerCase(arr[j]);
                 charIndex = abc.indexOf(currentChar);
 
-
                 doubleArray[keyCount % keyLength][charIndex]++;
                 keyCount++;
             }
 
-            // Calculate std dev for this keylength
+            // Calculate std dev for this keyLength
             for (int k = 0; k < keyLength; k++) {
                 int sumExp = 0;
                 int sum = 0;
@@ -106,8 +93,8 @@ public class VigenereBreaking {
                     maxFreqIndex = m;
                 }
             }
-
-            int likelyIndex = (maxFreqIndex + 21) % 26;
+//            System.out.println("Most frequent letter:" + abc.toCharArray()[maxFreqIndex]);
+            int likelyIndex = (maxFreqIndex + 22) % 26;
             guessedKeyArray[l] = abc.toCharArray()[likelyIndex];
         }
 

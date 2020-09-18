@@ -6,6 +6,7 @@ public class SubstitutionCipher {
 
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         try {
+            //TODO: Println weghalen
             System.out.println("Please enter requests:");
             // Read the line
             //TODO: Newline char in opdracht?
@@ -17,6 +18,7 @@ public class SubstitutionCipher {
                 handleMessage(requests, line);
             }
             br.close();
+            //TODO: Programma afsluiten
 
         } catch (Exception e) {
             System.out.println(e);
@@ -46,7 +48,7 @@ public class SubstitutionCipher {
                     encrypt = false;
                 }
                 else {
-                    throw new IllegalArgumentException(reqs[i] + " is not a valid direction.");
+                    throw new IllegalArgumentException(reqs[i] + " is not a valid encryption direction.");
                 }
             }
             else {
@@ -101,6 +103,7 @@ public class SubstitutionCipher {
                 // Convert back to string
                 result = String.valueOf(arr);
                 System.out.println(result);
+                //TODO: Slechts eenmaal printen naar console
             }
         }
     }

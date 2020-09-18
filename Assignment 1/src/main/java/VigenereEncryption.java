@@ -25,7 +25,7 @@ public class VigenereEncryption {
         String result;
         String[] req = request.split("\\s+");
 
-        //TODO Kan veiliger/generieker
+        //TODO: Kan veiliger/generieker
         int encrypt = req[0].equals("e") ? 1 : -1;
         char[] key = req[1].toCharArray();;
         int keyCount = 0;
@@ -62,6 +62,5 @@ public class VigenereEncryption {
         // Convert back to string
         result = String.valueOf(arr);
         System.out.println(result);
-
     }
 }
