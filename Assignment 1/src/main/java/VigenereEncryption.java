@@ -7,7 +7,6 @@ public class VigenereEncryption {
         try {
             System.out.println("Please enter requests:");
             // Read the line
-            //TODO: Newline char in opdracht?
             String requests = br.readLine();
             System.out.println("Please enter plaintext:");
             String plaintext = br.readLine();
