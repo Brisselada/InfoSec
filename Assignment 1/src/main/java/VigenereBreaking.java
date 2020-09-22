@@ -17,6 +17,7 @@ public class VigenereBreaking {
             System.out.println("Please enter plaintext:");
             //TODO: Grote input handlen van console
 //            String cipherText = br.readLine();
+            //TODO: Readall
             String cipherText = Files.readString(Path.of("src\\main\\resources\\textToBreak.txt"), StandardCharsets.US_ASCII);
 
             //            for (String line = br.readLine(); line != null; line = br.readLine()) {

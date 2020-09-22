@@ -2,6 +2,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
 public class SubstitutionCipher {
+    private static String abc = "abcdefghijklmnopqrstuvwxyz";
+
     public static void main(String[] args) {
 
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -27,7 +29,6 @@ public class SubstitutionCipher {
 
     private static void handleMessage(String requests, String plaintext) {
 
-        String abc = "abcdefghijklmnopqrstuvwxyz";
         String result = plaintext;
         String[] reqs = requests.split("\\s+");
         boolean encrypt = true;
@@ -37,6 +38,7 @@ public class SubstitutionCipher {
 
         // Loop through the requests
         for (int i = 0; i < reqs.length; i++) {
+            //TODO: i += 2 invoeren
             if (i % 2 == 0){
                 // Every even element (e or d)
                 if(reqs[i].equals("e")) {
@@ -82,6 +84,7 @@ public class SubstitutionCipher {
                     //TODO 26 char regex?
                     System.out.println("Method is mapping");
 
+                    //TODO variabele namen vervangen
                     String a = encrypt ? abc : reqs[i];
                     String b = encrypt ? reqs[i] : abc;
                     int index;
