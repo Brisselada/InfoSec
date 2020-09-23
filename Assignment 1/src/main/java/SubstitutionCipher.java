@@ -1,5 +1,8 @@
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class SubstitutionCipher {
     private static String abc = "abcdefghijklmnopqrstuvwxyz";
@@ -9,11 +12,16 @@ public class SubstitutionCipher {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         try {
             //TODO: Println weghalen
-            System.out.println("Please enter requests:");
+//            System.out.println("Please enter requests:");
             // Read the line
             //TODO: Newline char in opdracht?
-            String requests = br.readLine();
-            System.out.println("Please enter plaintext:");
+
+            String mergedArguments = mergeOperations(br.readLine());
+            String requests = mergeOperations(mergedArguments);
+
+//            String requests = br.readLine();
+
+//            System.out.println("Please enter plaintext:");
             String line;
             while((line = br.readLine()) != null) {
                 //TODO: Op een bepaald punt sluiten
@@ -32,6 +40,57 @@ public class SubstitutionCipher {
         }
     }
 
+
+    private static String mergeOperations(String requests){
+        //  [ "e", "100", "e", "abcasdfaers", "d", "100" ]
+        String[] reqs = requests.split("\\s+");
+        List<String> result = new ArrayList<String>();
+
+        for (int i = 0 ; i < reqs.length; i += 2 ){
+            boolean encrypt = isEncrypt(reqs[i]);
+            if (reqs[i+1].matches("-?\\d+")) {
+
+                int myShiftvalue = Integer.parseInt(reqs[i+1]);
+
+                int nextIndex = i + 3;
+                // merge while numbers found
+                while ( nextIndex < reqs.length && reqs[nextIndex].matches("-?\\d+")) {
+                    boolean mergeEncrypt = isEncrypt(reqs[nextIndex - 1]);
+                    int shiftValue = Integer.parseInt(reqs[nextIndex]);
+
+                    if (mergeEncrypt == encrypt) {
+                        myShiftvalue = myShiftvalue + shiftValue;
+                    } else  {
+                        myShiftvalue = myShiftvalue - shiftValue;
+                    }
+                    nextIndex += 2;
+                }
+
+                result.add(reqs[i] + " " + myShiftvalue);
+
+                i = i + nextIndex - 3;
+            } else {
+                result.add(reqs[i] + " " + reqs[i+1]);
+            }
+        }
+
+        return result.stream().map(Object::toString)
+                .collect(Collectors.joining(" "));
+    }
+
+    private static boolean isEncrypt(String input) {
+        if(input.equals("e")) {
+//                System.out.println("Encryption");
+            return true;
+        }
+        else if(input.equals("d")) {
+//                System.out.println("Decryption");
+            return false;
+        } else {
+            throw new IllegalArgumentException(input + " is not a valid encryption direction.");
+        }
+    }
+
     private static void handleMessage(String requests, String plaintext) {
 
         String result = plaintext;
@@ -44,27 +103,23 @@ public class SubstitutionCipher {
         // Loop through the requests
         for (int i = 0; i < reqs.length; i+=2) {
 
-            // Every even element (e or d)
-            if(reqs[i].equals("e")) {
-                System.out.println("Encryption");
-                encrypt = true;
-            }
-            else if(reqs[i].equals("d")) {
-                System.out.println("Decryption");
-                encrypt = false;
-            }
-            else {
-                throw new IllegalArgumentException(reqs[i] + " is not a valid encryption direction.");
-            }
+
+            encrypt = isEncrypt(reqs[i]);
 
             // Every odd element (method)
             char[] arr = result.toCharArray();
 
             if (reqs[i+1].matches("-?\\d+")) {
                 // Method is shift
-                System.out.println("Method is shift");
+//                System.out.println("Method is shift");
 
-                int shiftValue = Integer.parseInt(reqs[i+1]) * (encrypt ? 1 : -1);
+                int readValue = Integer.parseInt(reqs[i+1]);
+                int shiftValue = readValue * (encrypt ? 1 : -1);
+
+                while (shiftValue < 0) {
+                    shiftValue += 26;
+                }
+
                 int oldIndex;
                 int newIndex;
 
@@ -86,7 +141,7 @@ public class SubstitutionCipher {
             else {
                 // Method is mapping
                 //TODO 26 char regex?
-                System.out.println("Method is mapping");
+//                System.out.println("Method is mapping");
 
                 //TODO variabele namen vervangen
                 String a = encrypt ? abc : reqs[i+1];
@@ -109,8 +164,10 @@ public class SubstitutionCipher {
             }
             // Convert back to string
             result = String.valueOf(arr);
-            System.out.println(result);
-            //TODO: Slechts eenmaal printen naar console? Of toch wel per line
+
+            if (reqs.length == i + 2) {
+                System.out.println(result);
+            }
 
         }
     }

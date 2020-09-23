@@ -10,13 +10,13 @@ public class VigenereBreaking {
     public static void main(String[] args) {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in), 20000);
         try {
-            System.out.println("Please enter lower bound of key size range:");
+//            System.out.println("Please enter lower bound of key size range:");
             int lowerBound = Integer.parseInt(br.readLine());
 
-            System.out.println("Please enter upper bound of key size range:");
+//            System.out.println("Please enter upper bound of key size range:");
             int upperBound = Integer.parseInt(br.readLine());
 
-            System.out.println("Please enter plaintext:");
+//            System.out.println("Please enter plaintext:");
 
             StringBuilder cipherText = new StringBuilder();
             String input = "";
@@ -55,7 +55,7 @@ public class VigenereBreaking {
 
     private static String readLineWithTimeout(BufferedReader in) throws IOException {
 
-        int x = 3; // wait 3 seconds at most
+        int x = 1; // wait 1 second at most
 
         long startTime = System.currentTimeMillis();
         while ((System.currentTimeMillis() - startTime) < x * 1000 && !in.ready()) {

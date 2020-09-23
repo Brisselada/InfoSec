@@ -5,10 +5,10 @@ public class VigenereEncryption {
     public static void main(String[] args) {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         try {
-            System.out.println("Please enter requests:");
+//            System.out.println("Please enter requests:");
             // Read the line
             String requests = br.readLine();
-            System.out.println("Please enter plaintext:");
+//            System.out.println("Please enter plaintext:");
             String plaintext = br.readLine();
             handleMessage(requests, plaintext);
 
@@ -61,6 +61,6 @@ public class VigenereEncryption {
 
         // Convert back to string
         result = String.valueOf(arr);
-        System.out.println(result);
+        System.out.println(result + '\n');
     }
 }
