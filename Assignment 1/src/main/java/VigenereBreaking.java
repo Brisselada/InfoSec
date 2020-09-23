@@ -1,5 +1,7 @@
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.Buffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,22 +17,56 @@ public class VigenereBreaking {
             int upperBound = Integer.parseInt(br.readLine());
 
             System.out.println("Please enter plaintext:");
+
+            StringBuilder cipherText = new StringBuilder();
+            String input = "";
+
+            do {
+                try {
+                    input = VigenereBreaking.readLineWithTimeout(br);
+                    if (input != null) {
+                        cipherText.append(input).append("\n");
+                    }
+                } catch (IOException e) {
+                    input = null;
+                }
+            } while (input != null);
+
+
+
             //TODO: Grote input handlen van console
 //            String cipherText = br.readLine();
             //TODO: Readall hier implementeren? Textfile is nu tijdelijke oplossing
-            String cipherText = Files.readString(Path.of("src\\main\\resources\\textToBreak.txt"), StandardCharsets.US_ASCII);
+//            String cipherText = Files.readString(Path.of("src\\main\\resources\\textToBreak.txt"), StandardCharsets.US_ASCII);
 
             //            for (String line = br.readLine(); line != null; line = br.readLine()) {
 //                //TODO: Op een bepaald punt sluiten
 //                System.out.println("Line is " + line);
 //                cipherText += line;
 //            }
-            guessKey(lowerBound, upperBound, cipherText);
+            guessKey(lowerBound, upperBound, cipherText.toString());
             br.close();
 
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+
+    private static String readLineWithTimeout(BufferedReader in) throws IOException {
+
+        int x = 3; // wait 3 seconds at most
+
+        long startTime = System.currentTimeMillis();
+        while ((System.currentTimeMillis() - startTime) < x * 1000 && !in.ready()) {
+            // wait
+        }
+        if (in.ready()) {
+            return in.readLine();
+        } else {
+            return null;
+        }
+
     }
 
     public static void guessKey(int lowerBound, int upperBound, String cipherText) {
@@ -77,7 +113,9 @@ public class VigenereBreaking {
                 bestKeyLength = keyLength;
                 bestKeyDoubleArray = doubleArray;
             }
-            System.out.println("The sum of " + keyLength + " std. devs: " + Math.round(totalStdDev * 100.00)/ 100.00);
+
+            String stdDevsPercentage = String.format("%.02f", Math.round(totalStdDev * 100.00)/ 100.00);
+            System.out.println("The sum of " + keyLength + " std. devs: " + stdDevsPercentage);
         }
 
         char[] guessedKeyArray = new char[bestKeyLength];

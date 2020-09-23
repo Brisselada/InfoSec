@@ -42,7 +42,7 @@ public class SubstitutionCipher {
         boolean isUpper;
 
         // Loop through the requests
-        for (int i = 0; i < reqs.length; i++) {
+        for (int i = 0; i < reqs.length; i+=2) {
 
             // Every even element (e or d)
             if(reqs[i].equals("e")) {
@@ -112,7 +112,6 @@ public class SubstitutionCipher {
             System.out.println(result);
             //TODO: Slechts eenmaal printen naar console? Of toch wel per line
 
-            i = i + 2;
         }
     }
 }
