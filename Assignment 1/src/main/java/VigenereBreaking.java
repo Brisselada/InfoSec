@@ -17,7 +17,7 @@ public class VigenereBreaking {
             System.out.println("Please enter plaintext:");
             //TODO: Grote input handlen van console
 //            String cipherText = br.readLine();
-            //TODO: Readall
+            //TODO: Readall hier implementeren? Textfile is nu tijdelijke oplossing
             String cipherText = Files.readString(Path.of("src\\main\\resources\\textToBreak.txt"), StandardCharsets.US_ASCII);
 
             //            for (String line = br.readLine(); line != null; line = br.readLine()) {
@@ -40,7 +40,7 @@ public class VigenereBreaking {
         char currentChar;
         int bestKeyLength = 0;
         double highestSumStdDev = 0;
-        int[][] bestKeyDoubleArray = new int[1][26]; //TODO: Bad initialization
+        int[][] bestKeyDoubleArray = new int[1][26];
 
         for (int keyLength = lowerBound; keyLength <= upperBound; keyLength++) {
 

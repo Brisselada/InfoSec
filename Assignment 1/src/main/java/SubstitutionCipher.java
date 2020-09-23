@@ -14,11 +14,16 @@ public class SubstitutionCipher {
             //TODO: Newline char in opdracht?
             String requests = br.readLine();
             System.out.println("Please enter plaintext:");
-
-            for (String line = br.readLine(); line != null; line = br.readLine()) {
+            String line;
+            while((line = br.readLine()) != null) {
                 //TODO: Op een bepaald punt sluiten
                 handleMessage(requests, line);
             }
+
+//            for (String line = br.readLine(); line != null; line = br.readLine()) {
+//                //TODO: Op een bepaald punt sluiten
+//                handleMessage(requests, line);
+//            }
             br.close();
             //TODO: Programma afsluiten
 
@@ -38,76 +43,76 @@ public class SubstitutionCipher {
 
         // Loop through the requests
         for (int i = 0; i < reqs.length; i++) {
-            //TODO: i += 2 invoeren
-            if (i % 2 == 0){
-                // Every even element (e or d)
-                if(reqs[i].equals("e")) {
-                    System.out.println("Encryption");
-                    encrypt = true;
-                }
-                else if(reqs[i].equals("d")) {
-                    System.out.println("Decryption");
-                    encrypt = false;
-                }
-                else {
-                    throw new IllegalArgumentException(reqs[i] + " is not a valid encryption direction.");
+
+            // Every even element (e or d)
+            if(reqs[i].equals("e")) {
+                System.out.println("Encryption");
+                encrypt = true;
+            }
+            else if(reqs[i].equals("d")) {
+                System.out.println("Decryption");
+                encrypt = false;
+            }
+            else {
+                throw new IllegalArgumentException(reqs[i] + " is not a valid encryption direction.");
+            }
+
+            // Every odd element (method)
+            char[] arr = result.toCharArray();
+
+            if (reqs[i+1].matches("-?\\d+")) {
+                // Method is shift
+                System.out.println("Method is shift");
+
+                int shiftValue = Integer.parseInt(reqs[i+1]) * (encrypt ? 1 : -1);
+                int oldIndex;
+                int newIndex;
+
+                // Loop through the text
+                for (int j = 0; j < arr.length; j++) {
+                    if (!Character.isLetter(arr[j])) {
+                        continue;
+                    }
+                    isUpper = Character.isUpperCase(arr[j]);
+                    oldChar = Character.toLowerCase(arr[j]);
+
+                    oldIndex = abc.indexOf(oldChar);
+                    newIndex = (oldIndex + shiftValue + 26) % 26;
+                    newChar = abc.toCharArray()[newIndex];
+
+                    arr[j] = isUpper ? Character.toUpperCase(newChar) : newChar;
                 }
             }
             else {
-                // Every odd element (method)
-                char[] arr = result.toCharArray();
-                if (reqs[i].matches("-?\\d+")) {
-                    // Method is shift
-                    System.out.println("Method is shift");
+                // Method is mapping
+                //TODO 26 char regex?
+                System.out.println("Method is mapping");
 
-                    int shiftValue = Integer.parseInt(reqs[i]) * (encrypt ? 1 : -1);
-                    int oldIndex;
-                    int newIndex;
+                //TODO variabele namen vervangen
+                String a = encrypt ? abc : reqs[i+1];
+                String b = encrypt ? reqs[i+1] : abc;
+                int index;
 
-                    // Loop through the text
-                    for (int j = 0; j < arr.length; j++) {
-                        if (!Character.isLetter(arr[j])) {
-                            continue;
-                        }
-                        isUpper = Character.isUpperCase(arr[j]);
-                        oldChar = Character.toLowerCase(arr[j]);
-
-                        oldIndex = abc.indexOf(oldChar);
-                        newIndex = (oldIndex + shiftValue + 26) % 26;
-                        newChar = abc.toCharArray()[newIndex];
-
-                        arr[j] = isUpper ? Character.toUpperCase(newChar) : newChar;
+                // Loop through the text
+                for (int j = 0; j < arr.length; j++) {
+                    if (!Character.isLetter(arr[j])) {
+                        continue;
                     }
+                    isUpper = Character.isUpperCase(arr[j]);
+                    oldChar = Character.toLowerCase(arr[j]);
+
+                    index = a.indexOf(oldChar);
+                    newChar = b.toCharArray()[index];
+
+                    arr[j] = isUpper ? Character.toUpperCase(newChar) : newChar;
                 }
-                else {
-                    // Method is mapping
-                    //TODO 26 char regex?
-                    System.out.println("Method is mapping");
-
-                    //TODO variabele namen vervangen
-                    String a = encrypt ? abc : reqs[i];
-                    String b = encrypt ? reqs[i] : abc;
-                    int index;
-
-                    // Loop through the text
-                    for (int j = 0; j < arr.length; j++) {
-                        if (!Character.isLetter(arr[j])) {
-                            continue;
-                        }
-                        isUpper = Character.isUpperCase(arr[j]);
-                        oldChar = Character.toLowerCase(arr[j]);
-
-                        index = a.indexOf(oldChar);
-                        newChar = b.toCharArray()[index];
-
-                        arr[j] = isUpper ? Character.toUpperCase(newChar) : newChar;
-                    }
-                }
-                // Convert back to string
-                result = String.valueOf(arr);
-                System.out.println(result);
-                //TODO: Slechts eenmaal printen naar console
             }
+            // Convert back to string
+            result = String.valueOf(arr);
+            System.out.println(result);
+            //TODO: Slechts eenmaal printen naar console? Of toch wel per line
+
+            i = i + 2;
         }
     }
 }
