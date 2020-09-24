@@ -16,11 +16,11 @@ public class SubstitutionCipher {
             // Read the line
             //TODO: Newline char in opdracht?
 
-            //String mergedArguments = mergeOperations(br.readLine());
-            //String requests = mergeOperations(mergedArguments);
+            String mergedArguments = mergeOperations(br.readLine());
+            String requests = mergedArguments;
 
 
-            String requests = br.readLine();
+//            String requests = br.readLine();
 
 //            System.out.println("Please enter plaintext:");
             String line;
@@ -60,14 +60,20 @@ public class SubstitutionCipher {
                     double shiftValue = Double.parseDouble(reqs[nextIndex]);
 
                     if (mergeEncrypt == encrypt) {
-                        myShiftvalue = myShiftvalue + shiftValue;
+                        myShiftvalue = (myShiftvalue + shiftValue) % 26;
                     } else {
-                        myShiftvalue = myShiftvalue - shiftValue;
+                        myShiftvalue = (myShiftvalue - shiftValue);
                     }
+
+                    if (shiftValue < 0) {
+                        double valueToAdd = Math.floor(-shiftValue / 26);
+                        shiftValue += valueToAdd * 26;
+                    }
+
                     nextIndex += 2;
                 }
 
-                result.add(reqs[i] + " " + myShiftvalue);
+                result.add(reqs[i] + " " + (int) myShiftvalue);
 
                 i = i + nextIndex - 3;
             } else {
