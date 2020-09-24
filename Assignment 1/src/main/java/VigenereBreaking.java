@@ -53,7 +53,6 @@ public class VigenereBreaking {
 
 
     private static String readLineWithTimeout(BufferedReader in) throws IOException {
-
         int x = 1; // wait 1 second at most
 
         long startTime = System.currentTimeMillis();
@@ -65,7 +64,6 @@ public class VigenereBreaking {
         } else {
             return null;
         }
-
     }
 
     public static void guessKey(int lowerBound, int upperBound, String cipherText) {

@@ -1,4 +1,5 @@
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class VigenereEncryption {
@@ -9,13 +10,42 @@ public class VigenereEncryption {
             // Read the line
             String requests = br.readLine();
 //            System.out.println("Please enter plaintext:");
-            String plaintext = br.readLine();
-            handleMessage(requests, plaintext);
+            StringBuilder plainText = new StringBuilder();
+            String input = "";
+
+            do {
+                try {
+                    input = readLineWithTimeout(br);
+                    if (input != null) {
+                        plainText.append(input).append("\n");
+                    }
+                } catch (IOException e) {
+                    input = null;
+                }
+            } while (input != null);
 
             br.close();
 
+
+            handleMessage(requests, plainText.toString());
+
+
         } catch (Exception e) {
             System.out.println(e);
+        }
+    }
+
+    private static String readLineWithTimeout(BufferedReader in) throws IOException {
+        int x = 1; // wait 1 second at most
+
+        long startTime = System.currentTimeMillis();
+        while ((System.currentTimeMillis() - startTime) < x * 1000 && !in.ready()) {
+            // wait
+        }
+        if (in.ready()) {
+            return in.readLine();
+        } else {
+            return null;
         }
     }
 
@@ -62,6 +92,6 @@ public class VigenereEncryption {
 
         // Convert back to string
         result = String.valueOf(arr);
-        System.out.println(result + '\n');
+        System.out.println(result.trim() + '\n');
     }
 }
