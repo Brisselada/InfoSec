@@ -99,7 +99,7 @@ public class SubstitutionCipher {
                 i = nextIndex - 3;
 
 
-                result.add(reqs[i] + " " + reqs[i + 1]);
+                result.add(reqs[i] + " " + newKey);
             }
         }
 
