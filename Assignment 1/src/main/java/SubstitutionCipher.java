@@ -16,10 +16,11 @@ public class SubstitutionCipher {
             // Read the line
             //TODO: Newline char in opdracht?
 
-            String mergedArguments = mergeOperations(br.readLine());
-            String requests = mergeOperations(mergedArguments);
+            //String mergedArguments = mergeOperations(br.readLine());
+            //String requests = mergeOperations(mergedArguments);
 
-//            String requests = br.readLine();
+
+            String requests = br.readLine();
 
 //            System.out.println("Please enter plaintext:");
             String line;
@@ -50,13 +51,13 @@ public class SubstitutionCipher {
             boolean encrypt = isEncrypt(reqs[i]);
             if (reqs[i+1].matches("-?\\d+")) {
 
-                int myShiftvalue = Integer.parseInt(reqs[i+1]);
+                double myShiftvalue = Double.parseDouble(reqs[i+1]);
 
                 int nextIndex = i + 3;
                 // merge while numbers found
                 while ( nextIndex < reqs.length && reqs[nextIndex].matches("-?\\d+")) {
                     boolean mergeEncrypt = isEncrypt(reqs[nextIndex - 1]);
-                    int shiftValue = Integer.parseInt(reqs[nextIndex]);
+                    double shiftValue = Double.parseDouble(reqs[nextIndex]);
 
                     if (mergeEncrypt == encrypt) {
                         myShiftvalue = myShiftvalue + shiftValue;
@@ -102,8 +103,6 @@ public class SubstitutionCipher {
 
         // Loop through the requests
         for (int i = 0; i < reqs.length; i+=2) {
-
-
             encrypt = isEncrypt(reqs[i]);
 
             // Every odd element (method)
@@ -113,15 +112,16 @@ public class SubstitutionCipher {
                 // Method is shift
 //                System.out.println("Method is shift");
 
-                int readValue = Integer.parseInt(reqs[i+1]);
-                int shiftValue = readValue * (encrypt ? 1 : -1);
+                double readValue = Double.parseDouble(reqs[i+1]);
+                double shiftValue = readValue * (encrypt ? 1 : -1);
 
-                while (shiftValue < 0) {
-                    shiftValue += 26;
+                if (shiftValue < 0) {
+                    double valueToAdd = Math.round(-shiftValue / 26);
+                    shiftValue += valueToAdd * 26;
                 }
 
-                int oldIndex;
-                int newIndex;
+                double oldIndex;
+                double newIndex;
 
                 // Loop through the text
                 for (int j = 0; j < arr.length; j++) {
@@ -133,7 +133,7 @@ public class SubstitutionCipher {
 
                     oldIndex = abc.indexOf(oldChar);
                     newIndex = (oldIndex + shiftValue + 26) % 26;
-                    newChar = abc.toCharArray()[newIndex];
+                    newChar = abc.toCharArray()[(int)newIndex];
 
                     arr[j] = isUpper ? Character.toUpperCase(newChar) : newChar;
                 }
