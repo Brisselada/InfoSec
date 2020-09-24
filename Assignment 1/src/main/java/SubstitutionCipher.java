@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class SubstitutionCipher {
-    private static String abc = "abcdefghijklmnopqrstuvwxyz";
+    private static final String abc = "abcdefghijklmnopqrstuvwxyz";
 
     public static void main(String[] args) {
 
@@ -19,7 +19,11 @@ public class SubstitutionCipher {
 
 
             // WITH MERGE
-            String requests = mergeOperations(br.readLine());
+
+            String requests = br.readLine();
+            requests = mergeOperations(requests);
+            requests = shiftToMap(requests);
+            requests = mergeOperations(requests);
 
             // WITHOUT MERGE
 //             String requests = br.readLine();
@@ -41,6 +45,29 @@ public class SubstitutionCipher {
         } catch (Exception e) {
             System.out.println(e);
         }
+    }
+
+    private static String shiftToMap(String requests) {
+        String[] reqs = requests.split("\\s+");
+        List<String> result = new ArrayList<String>();
+
+        for (int i = 0; i < reqs.length; i += 2) {
+            // if is shift
+            if (reqs[i + 1].matches("-?\\d+")) {
+                boolean encrypt = isEncrypt(reqs[i]);
+
+                double readValue = Double.parseDouble(reqs[i + 1]);
+                double shiftValue = readValue * (encrypt ? 1 : -1);
+
+                String key = String.valueOf(ShiftString(abc.toCharArray(), shiftValue));
+                result.add("e " + key);
+            } else {
+                result.add(reqs[i] + " " + reqs[i+1]);
+            }
+        }
+
+        return result.stream().map(Object::toString)
+                .collect(Collectors.joining(" "));
     }
 
 
@@ -149,7 +176,6 @@ public class SubstitutionCipher {
         return String.valueOf(letterArray);
     }
 
-
     // index of letters a in b
     // Generally used to get the index of each letter in a in (alphabet) b
     private static int[] mapLettersToIndices(String a, String b) {
@@ -175,6 +201,43 @@ public class SubstitutionCipher {
         }
     }
 
+
+    private static String ShiftString(String input, double shiftAmount) {
+        return input;
+    }
+
+    private static char[] ShiftString(char[] input, double shiftValue) {
+        char oldChar;
+        char newChar;
+        boolean isUpper;
+
+        if (shiftValue < 0) {
+            double valueToAdd = Math.round(-shiftValue / 26);
+            shiftValue += valueToAdd * 26;
+        }
+
+        double oldIndex;
+        double newIndex;
+
+        // Loop through the text
+        for (int j = 0; j < input.length; j++) {
+            if (!Character.isLetter(input[j])) {
+                continue;
+            }
+            isUpper = Character.isUpperCase(input[j]);
+            oldChar = Character.toLowerCase(input[j]);
+
+            oldIndex = abc.indexOf(oldChar);
+            newIndex = (oldIndex + shiftValue + 26) % 26;
+            newChar = abc.toCharArray()[(int) newIndex];
+
+            input[j] = isUpper ? Character.toUpperCase(newChar) : newChar;
+        }
+
+        return input;
+    }
+
+
     private static void handleMessage(String requests, String plaintext) {
 
         String result = plaintext;
@@ -198,28 +261,8 @@ public class SubstitutionCipher {
                 double readValue = Double.parseDouble(reqs[i + 1]);
                 double shiftValue = readValue * (encrypt ? 1 : -1);
 
-                if (shiftValue < 0) {
-                    double valueToAdd = Math.round(-shiftValue / 26);
-                    shiftValue += valueToAdd * 26;
-                }
+                arr = ShiftString(arr, shiftValue);
 
-                double oldIndex;
-                double newIndex;
-
-                // Loop through the text
-                for (int j = 0; j < arr.length; j++) {
-                    if (!Character.isLetter(arr[j])) {
-                        continue;
-                    }
-                    isUpper = Character.isUpperCase(arr[j]);
-                    oldChar = Character.toLowerCase(arr[j]);
-
-                    oldIndex = abc.indexOf(oldChar);
-                    newIndex = (oldIndex + shiftValue + 26) % 26;
-                    newChar = abc.toCharArray()[(int) newIndex];
-
-                    arr[j] = isUpper ? Character.toUpperCase(newChar) : newChar;
-                }
             } else {
                 // Method is mapping
                 //TODO 26 char regex?
