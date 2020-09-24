@@ -33,7 +33,6 @@ public class VigenereBreaking {
             } while (input != null);
 
 
-
             //TODO: Grote input handlen van console
 //            String cipherText = br.readLine();
             //TODO: Readall hier implementeren? Textfile is nu tijdelijke oplossing
@@ -105,7 +104,7 @@ public class VigenereBreaking {
                     sumExp += doubleArray[k][h] * doubleArray[k][h];
                     sum += doubleArray[k][h];
                 }
-                double stdDev = Math.sqrt(((double)sumExp / 26.0) - Math.pow(((double)sum / 26.0), 2));
+                double stdDev = Math.sqrt(((double) sumExp / 26.0) - Math.pow(((double) sum / 26.0), 2));
                 totalStdDev += stdDev;
             }
             if (totalStdDev > highestSumStdDev) {
@@ -114,7 +113,7 @@ public class VigenereBreaking {
                 bestKeyDoubleArray = doubleArray;
             }
 
-            String stdDevsPercentage = String.format("%.02f", Math.round(totalStdDev * 100.00)/ 100.00);
+            String stdDevsPercentage = String.format("%.02f", Math.round(totalStdDev * 100.00) / 100.00);
             System.out.println("The sum of " + keyLength + " std. devs: " + stdDevsPercentage);
         }
 

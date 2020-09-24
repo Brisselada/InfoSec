@@ -24,7 +24,7 @@ public class SubstitutionCipher {
 
 //            System.out.println("Please enter plaintext:");
             String line;
-            while((line = br.readLine()) != null) {
+            while ((line = br.readLine()) != null) {
                 //TODO: Op een bepaald punt sluiten
                 handleMessage(requests, line);
             }
@@ -42,26 +42,26 @@ public class SubstitutionCipher {
     }
 
 
-    private static String mergeOperations(String requests){
+    private static String mergeOperations(String requests) {
         //  [ "e", "100", "e", "abcasdfaers", "d", "100" ]
         String[] reqs = requests.split("\\s+");
         List<String> result = new ArrayList<String>();
 
-        for (int i = 0 ; i < reqs.length; i += 2 ){
+        for (int i = 0; i < reqs.length; i += 2) {
             boolean encrypt = isEncrypt(reqs[i]);
-            if (reqs[i+1].matches("-?\\d+")) {
+            if (reqs[i + 1].matches("-?\\d+")) {
 
-                double myShiftvalue = Double.parseDouble(reqs[i+1]);
+                double myShiftvalue = Double.parseDouble(reqs[i + 1]);
 
                 int nextIndex = i + 3;
                 // merge while numbers found
-                while ( nextIndex < reqs.length && reqs[nextIndex].matches("-?\\d+")) {
+                while (nextIndex < reqs.length && reqs[nextIndex].matches("-?\\d+")) {
                     boolean mergeEncrypt = isEncrypt(reqs[nextIndex - 1]);
                     double shiftValue = Double.parseDouble(reqs[nextIndex]);
 
                     if (mergeEncrypt == encrypt) {
                         myShiftvalue = myShiftvalue + shiftValue;
-                    } else  {
+                    } else {
                         myShiftvalue = myShiftvalue - shiftValue;
                     }
                     nextIndex += 2;
@@ -71,7 +71,7 @@ public class SubstitutionCipher {
 
                 i = i + nextIndex - 3;
             } else {
-                result.add(reqs[i] + " " + reqs[i+1]);
+                result.add(reqs[i] + " " + reqs[i + 1]);
             }
         }
 
@@ -80,11 +80,10 @@ public class SubstitutionCipher {
     }
 
     private static boolean isEncrypt(String input) {
-        if(input.equals("e")) {
+        if (input.equals("e")) {
 //                System.out.println("Encryption");
             return true;
-        }
-        else if(input.equals("d")) {
+        } else if (input.equals("d")) {
 //                System.out.println("Decryption");
             return false;
         } else {
@@ -102,17 +101,17 @@ public class SubstitutionCipher {
         boolean isUpper;
 
         // Loop through the requests
-        for (int i = 0; i < reqs.length; i+=2) {
+        for (int i = 0; i < reqs.length; i += 2) {
             encrypt = isEncrypt(reqs[i]);
 
             // Every odd element (method)
             char[] arr = result.toCharArray();
 
-            if (reqs[i+1].matches("-?\\d+")) {
+            if (reqs[i + 1].matches("-?\\d+")) {
                 // Method is shift
 //                System.out.println("Method is shift");
 
-                double readValue = Double.parseDouble(reqs[i+1]);
+                double readValue = Double.parseDouble(reqs[i + 1]);
                 double shiftValue = readValue * (encrypt ? 1 : -1);
 
                 if (shiftValue < 0) {
@@ -133,19 +132,18 @@ public class SubstitutionCipher {
 
                     oldIndex = abc.indexOf(oldChar);
                     newIndex = (oldIndex + shiftValue + 26) % 26;
-                    newChar = abc.toCharArray()[(int)newIndex];
+                    newChar = abc.toCharArray()[(int) newIndex];
 
                     arr[j] = isUpper ? Character.toUpperCase(newChar) : newChar;
                 }
-            }
-            else {
+            } else {
                 // Method is mapping
                 //TODO 26 char regex?
 //                System.out.println("Method is mapping");
 
                 //TODO variabele namen vervangen
-                String a = encrypt ? abc : reqs[i+1];
-                String b = encrypt ? reqs[i+1] : abc;
+                String a = encrypt ? abc : reqs[i + 1];
+                String b = encrypt ? reqs[i + 1] : abc;
                 int index;
 
                 // Loop through the text

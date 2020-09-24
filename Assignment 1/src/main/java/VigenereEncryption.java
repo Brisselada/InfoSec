@@ -27,7 +27,8 @@ public class VigenereEncryption {
 
         //TODO: Kan veiliger/generieker
         int encrypt = req[0].equals("e") ? 1 : -1;
-        char[] key = req[1].toCharArray();;
+        char[] key = req[1].toCharArray();
+        ;
         int keyCount = 0;
 
         char oldChar;
