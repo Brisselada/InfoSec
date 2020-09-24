@@ -21,7 +21,7 @@ public class SubstitutionCipher {
             String requests = mergeOperations(br.readLine());
 
             // WITHOUT MERGE
-            // String requests = br.readLine();
+//             String requests = br.readLine();
 
 //            System.out.println("Please enter plaintext:");
             String line;
@@ -61,7 +61,7 @@ public class SubstitutionCipher {
                     double shiftValue = Double.parseDouble(reqs[nextIndex]);
 
                     if (mergeEncrypt == encrypt) {
-                        myShiftvalue = (myShiftvalue + shiftValue) % 26;
+                        myShiftvalue = myShiftvalue + shiftValue;
                     } else {
                         myShiftvalue = (myShiftvalue - shiftValue);
                     }
@@ -69,21 +69,54 @@ public class SubstitutionCipher {
                     if (myShiftvalue < 0) {
                         double valueToAdd = Math.floor(-myShiftvalue / 26);
                         myShiftvalue += valueToAdd * 26;
+                    } else {
+                        myShiftvalue = myShiftvalue % 26;
                     }
 
                     nextIndex += 2;
                 }
 
                 result.add(reqs[i] + " " + (int) myShiftvalue);
+                i = nextIndex - 3;
 
-                i = i + nextIndex - 3;
+
             } else {
+                // Get Mapping matches
+                String letters = reqs[i + 1];
+                // get indexes in alphabet
+                int[] indexes = mapLettersToIndexes(letters, abc);
+
+                int nextIndex = i + 3;
+                // merge while no numbers found or out of range
+                while (nextIndex < reqs.length && !reqs[nextIndex].matches("-?\\d+")) {
+                    boolean mergeEncrypt = isEncrypt(reqs[nextIndex - 1]);
+                    String mergeLetters = reqs[nextIndex];
+
+
+
+                    nextIndex += 2;
+                }
+                i = nextIndex - 3;
+
+
                 result.add(reqs[i] + " " + reqs[i + 1]);
             }
         }
 
         return result.stream().map(Object::toString)
                 .collect(Collectors.joining(" "));
+    }
+
+
+    // index of letters a in b
+    private static int[] mapLettersToIndexes(String a, String b) {
+        int[] indexes = new int[a.length()];
+
+        for (int i = 0; i < a.length(); i ++) {
+            indexes[i] = b.indexOf(a.indexOf(i));
+        }
+
+        return  indexes;
     }
 
     private static boolean isEncrypt(String input) {
