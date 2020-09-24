@@ -16,11 +16,12 @@ public class SubstitutionCipher {
             // Read the line
             //TODO: Newline char in opdracht?
 
-            String mergedArguments = mergeOperations(br.readLine());
-            String requests = mergedArguments;
 
+            // WITH MERGE
+            String requests = mergeOperations(br.readLine());
 
-//            String requests = br.readLine();
+            // WITHOUT MERGE
+            // String requests = br.readLine();
 
 //            System.out.println("Please enter plaintext:");
             String line;
