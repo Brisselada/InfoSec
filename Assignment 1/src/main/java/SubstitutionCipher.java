@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -81,25 +82,32 @@ public class SubstitutionCipher {
 
 
             } else {
-                // Get Mapping matches
-                String letters = reqs[i + 1];
-                // get indexes in alphabet
-                int[] indexes = mapLettersToIndexes(letters, abc);
 
+                // Convert initial abc to indices
+                int[] firstKeyIndices = mapLettersToIndices(abc, abc);
+                int[] nextKeyIndices = mapLettersToIndices(reqs[i + 1], abc);
+                boolean mergeEncrypt = isEncrypt(reqs[i]);
+
+                int[] resultKeyIndices = getResultKeyIndices(firstKeyIndices, nextKeyIndices, mergeEncrypt);
+
+                // Check method of next en/decryption
                 int nextIndex = i + 3;
                 // merge while no numbers found or out of range
                 while (nextIndex < reqs.length && !reqs[nextIndex].matches("-?\\d+")) {
-                    boolean mergeEncrypt = isEncrypt(reqs[nextIndex - 1]);
-                    String mergeLetters = reqs[nextIndex];
-
-
+                    mergeEncrypt = isEncrypt(reqs[nextIndex - 1]);
+//                    String mergeLetters = reqs[nextIndex];
+                    // Convert mapping key to indices as found in the alphabet
+                    nextKeyIndices = mapLettersToIndices(reqs[nextIndex], abc);
+                    resultKeyIndices = getResultKeyIndices(resultKeyIndices, nextKeyIndices, mergeEncrypt);
 
                     nextIndex += 2;
                 }
+                // i jumps to last found mapping method
                 i = nextIndex - 3;
 
-
-                result.add(reqs[i] + " " + newKey);
+                String newKey = mapIndicesToLetters(resultKeyIndices);
+//                result.add(reqs[i] + " " + newKey);
+                result.add("e " + newKey);
             }
         }
 
@@ -107,16 +115,52 @@ public class SubstitutionCipher {
                 .collect(Collectors.joining(" "));
     }
 
+    private static int[] getResultKeyIndices(int[] firstKeyIndices, int[] nextKeyIndices, boolean mergeEncrypt) {
 
-    // index of letters a in b
-    private static int[] mapLettersToIndexes(String a, String b) {
-        int[] indexes = new int[a.length()];
+        int[] plainTextArray = firstKeyIndices;
+        int[] abcArray = mapLettersToIndices(abc, abc);
 
-        for (int i = 0; i < a.length(); i ++) {
-            indexes[i] = b.indexOf(a.indexOf(i));
+        int[] fromKey = mergeEncrypt ? abcArray : nextKeyIndices;
+        int[] toKey = mergeEncrypt ? nextKeyIndices : abcArray;
+
+        int[] resultKeyIndices = new int[26];
+
+        for (int t = 0; t < plainTextArray.length; t++) {
+            int oldIndex = plainTextArray[t];
+            int foundIndex = 0;
+            for (int f = 0; f < 26; f++) {
+                if (fromKey[f] == oldIndex) {
+                    foundIndex = f;
+                }
+            }
+            resultKeyIndices[t] = toKey[foundIndex];
         }
 
-        return  indexes;
+        return resultKeyIndices;
+    }
+
+    private static String mapIndicesToLetters (int[] indices) {
+        char[] letterArray = new char[indices.length];
+
+        for (int i = 0; i < indices.length; i ++) {
+            letterArray[i] = abc.toCharArray()[indices[i]];
+        }
+
+        return String.valueOf(letterArray);
+    }
+
+
+    // index of letters a in b
+    // Generally used to get the index of each letter in a in (alphabet) b
+    private static int[] mapLettersToIndices(String a, String b) {
+        int[] indices = new int[a.length()];
+        char[] aArray = a.toCharArray();
+
+        for (int i = 0; i < a.length(); i ++) {
+            indices[i] = b.indexOf(aArray[i]);
+        }
+
+        return  indices;
     }
 
     private static boolean isEncrypt(String input) {
