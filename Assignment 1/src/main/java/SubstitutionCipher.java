@@ -65,9 +65,9 @@ public class SubstitutionCipher {
                         myShiftvalue = (myShiftvalue - shiftValue);
                     }
 
-                    if (shiftValue < 0) {
-                        double valueToAdd = Math.floor(-shiftValue / 26);
-                        shiftValue += valueToAdd * 26;
+                    if (myShiftvalue < 0) {
+                        double valueToAdd = Math.floor(-myShiftvalue / 26);
+                        myShiftvalue += valueToAdd * 26;
                     }
 
                     nextIndex += 2;
