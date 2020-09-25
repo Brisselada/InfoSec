@@ -3,9 +3,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class VigenereEncryption {
-    public static void main(String[] args) {
+    private static final String abc = "abcdefghijklmnopqrstuvwxyz";
 
+    public static void main(String[] args) {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
         try {
             // Read the line
             String requests = br.readLine();
@@ -25,7 +27,7 @@ public class VigenereEncryption {
 
             br.close();
 
-            handleMessage(requests, plainText.toString());
+            handleInput(requests, plainText.toString());
 
         } catch (Exception e) {
             System.out.println(e);
@@ -52,26 +54,37 @@ public class VigenereEncryption {
         }
     }
 
+    /***
+     * Handle the input from the command line
+     * @param requests The request string input containing the operations
+     * @param plainText The input text that should me encrypted or decrypted.
+     */
+    private static void handleInput(String requests, String plainText) {
+        String[] req = requests.split("\\s+");
+        boolean encrypt = req[0].equals("e");
+        String key = req[1];
+
+        String result = EncryptVigenere(plainText, key, encrypt);
+        System.out.println(result);
+    }
+
     /**
      * Encrypt/decrypt using the Vigenere method
-     * @param request The key used in the Vigenere method
-     * @param plaintext The text that should be encrypted/decrypted
+     * @param inputText The text that should be encrypted or decrypted
+     * @param key The key that is used for encrypting or decrypting the inputText
      */
-    private static void handleMessage(String request, String plaintext) {
-
-        String abc = "abcdefghijklmnopqrstuvwxyz";
+    public static String EncryptVigenere(String inputText, String key, boolean encrypt) {
         String result;
-        String[] req = request.split("\\s+");
 
-        int encrypt = req[0].equals("e") ? 1 : -1;
-        char[] key = req[1].toCharArray();
+        int encryptMultiplier = encrypt ? 1 : -1;
+        char[] keyArray = key.toCharArray();
         int keyCount = 0;
 
         char oldChar;
         char newChar;
         boolean isUpper;
 
-        char[] arr = plaintext.toCharArray();
+        char[] arr = inputText.toCharArray();
 
         int shiftValue;
         int oldIndex;
@@ -83,7 +96,7 @@ public class VigenereEncryption {
                 continue;
             }
             // Shiftvalue is index of current keychar
-            shiftValue = abc.indexOf(key[(keyCount % key.length)]) * encrypt;
+            shiftValue = abc.indexOf(keyArray[(keyCount % keyArray.length)]) * encryptMultiplier;
 
             isUpper = Character.isUpperCase(arr[j]);
             oldChar = Character.toLowerCase(arr[j]);
@@ -99,6 +112,6 @@ public class VigenereEncryption {
 
         // Convert back to string
         result = String.valueOf(arr);
-        System.out.println(result.trim() + '\n');
+        return result.trim() + '\n';
     }
 }
