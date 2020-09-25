@@ -1,22 +1,13 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.Buffer;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class VigenereBreaking {
     public static void main(String[] args) {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in), 20000);
         try {
-//            System.out.println("Please enter lower bound of key size range:");
             int lowerBound = Integer.parseInt(br.readLine());
-
-//            System.out.println("Please enter upper bound of key size range:");
             int upperBound = Integer.parseInt(br.readLine());
-
-//            System.out.println("Please enter plaintext:");
 
             StringBuilder cipherText = new StringBuilder();
             String input = "";
@@ -32,17 +23,6 @@ public class VigenereBreaking {
                 }
             } while (input != null);
 
-
-            //TODO: Grote input handlen van console
-//            String cipherText = br.readLine();
-            //TODO: Readall hier implementeren? Textfile is nu tijdelijke oplossing
-//            String cipherText = Files.readString(Path.of("src\\main\\resources\\textToBreak.txt"), StandardCharsets.US_ASCII);
-
-            //            for (String line = br.readLine(); line != null; line = br.readLine()) {
-//                //TODO: Op een bepaald punt sluiten
-//                System.out.println("Line is " + line);
-//                cipherText += line;
-//            }
             guessKey(lowerBound, upperBound, cipherText.toString());
             br.close();
 
@@ -52,6 +32,12 @@ public class VigenereBreaking {
     }
 
 
+    /**
+     * Reads the line with a timeout
+     * @param in The supplied BufferedReader
+     * @return Returns the line that has been read
+     * @throws IOException
+     */
     private static String readLineWithTimeout(BufferedReader in) throws IOException {
         int x = 1; // wait 1 second at most
 
@@ -66,6 +52,12 @@ public class VigenereBreaking {
         }
     }
 
+    /**
+     * Find the most optimal keyLength, then guess the key based on letter frequency
+     * @param lowerBound Lower bound of the keyLength range that should be searched
+     * @param upperBound Upper bound of the keyLength range that should be searched
+     * @param cipherText The text encrypted through the Vigenere method
+     */
     public static void guessKey(int lowerBound, int upperBound, String cipherText) {
         String abc = "abcdefghijklmnopqrstuvwxyz";
         char[] arr = cipherText.toCharArray();
@@ -75,6 +67,7 @@ public class VigenereBreaking {
         double highestSumStdDev = 0;
         int[][] bestKeyDoubleArray = new int[1][26];
 
+        // Find the most likely out of the given keyLengths
         for (int keyLength = lowerBound; keyLength <= upperBound; keyLength++) {
 
             int keyCount = 0;
@@ -129,7 +122,7 @@ public class VigenereBreaking {
                     maxFreqIndex = m;
                 }
             }
-//            System.out.println("Most frequent letter:" + abc.toCharArray()[maxFreqIndex]);
+            // Assume the letter with the highest frequency is an encrypted 'e'
             int likelyIndex = (maxFreqIndex + 22) % 26;
             guessedKeyArray[l] = abc.toCharArray()[likelyIndex];
         }

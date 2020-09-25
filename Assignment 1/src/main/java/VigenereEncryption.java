@@ -4,12 +4,11 @@ import java.io.InputStreamReader;
 
 public class VigenereEncryption {
     public static void main(String[] args) {
+
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         try {
-//            System.out.println("Please enter requests:");
             // Read the line
             String requests = br.readLine();
-//            System.out.println("Please enter plaintext:");
             StringBuilder plainText = new StringBuilder();
             String input = "";
 
@@ -26,15 +25,19 @@ public class VigenereEncryption {
 
             br.close();
 
-
             handleMessage(requests, plainText.toString());
-
 
         } catch (Exception e) {
             System.out.println(e);
         }
     }
 
+    /**
+     * Reads the line with a timeout
+     * @param in The supplied BufferedReader
+     * @return Returns the line that has been read
+     * @throws IOException
+     */
     private static String readLineWithTimeout(BufferedReader in) throws IOException {
         int x = 1; // wait 1 second at most
 
@@ -49,16 +52,19 @@ public class VigenereEncryption {
         }
     }
 
+    /**
+     * Encrypt/decrypt using the Vigenere method
+     * @param request The key used in the Vigenere method
+     * @param plaintext The text that should be encrypted/decrypted
+     */
     private static void handleMessage(String request, String plaintext) {
 
         String abc = "abcdefghijklmnopqrstuvwxyz";
         String result;
         String[] req = request.split("\\s+");
 
-        //TODO: Kan veiliger/generieker
         int encrypt = req[0].equals("e") ? 1 : -1;
         char[] key = req[1].toCharArray();
-        ;
         int keyCount = 0;
 
         char oldChar;
@@ -76,12 +82,13 @@ public class VigenereEncryption {
             if (!Character.isLetter(arr[j])) {
                 continue;
             }
-            // Shiftvalue is index van huidige keychar
+            // Shiftvalue is index of current keychar
             shiftValue = abc.indexOf(key[(keyCount % key.length)]) * encrypt;
 
             isUpper = Character.isUpperCase(arr[j]);
             oldChar = Character.toLowerCase(arr[j]);
 
+            // Determine the new character on this position
             oldIndex = abc.indexOf(oldChar);
             newIndex = (oldIndex + shiftValue + 26) % 26;
             newChar = abc.toCharArray()[newIndex];
