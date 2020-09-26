@@ -1,7 +1,4 @@
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,11 +10,17 @@ public class RC4 {
         //TODO IOException moet later weg
 //        String cipherText = Files.readString(Path.of("src\\main\\resources\\2.txt"), StandardCharsets.US_ASCII);
 //        System.out.println(cipherText);
-        byte[] fileArray = Files.readAllBytes(Path.of("src\\main\\resources\\0.in"));
 
+
+        byte[] fileArray = Files.readAllBytes(Path.of("src\\main\\resources\\0.in"));
         byte[] in = handleMessage(fileArray);
         byte[] out = Files.readAllBytes(Path.of("src\\main\\resources\\0.out"));
-        System.out.println(fileArray);
+        System.out.println("filearray: " + fileArray);
+        System.out.println("in: \n");
+        System.out.write(in);
+        System.out.println("out: \n");
+        System.out.write(out);
+
 
 
 //        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -66,26 +69,24 @@ public class RC4 {
         }
     }
 
-    private static void getCutoffIndex(byte[] arr) {
-
-    }
-
-    private static int[] initializeLookupTable(byte[] keyArray) {
-        int[] S = new int[256];
-        int[] K = new int[256];
+    private static byte[] initializeLookupTable(byte[] keyArray) {
+        byte[] S = new byte[256];
+        byte[] K = new byte[256];
         int N = keyArray.length;
-        for (int i = 0; i <= 255; i++) {
-            S[i] =  i;
+        for (int i = 0; i < 256; i++) {
+            S[i] = (byte) i;
             K[i] = keyArray[i % N];
         }
         int j = 0;
-        int temp;
-        for (int i = 0; i <= 255; i++) {
-            j = (j + S[i] + K[i]) % 256;
+        byte temp;
+        for (int i = 0; i < 256; i++) {
+            j = (j + S[i] + K[i]) & 0xFF;
+//            j = (j + S[i] + K[i]) % 256;
             temp = S[i];
             S[i] = S[j];
             S[j] = temp;
         }
+
         return S;
     }
 
@@ -114,34 +115,32 @@ public class RC4 {
         byte[] result = new byte[textBytes.length];
 
         // Initialize lookup table S using the repeating key
-        int[] S = initializeLookupTable(keyBytes);
+        byte[] S = initializeLookupTable(keyBytes);
 
-        // Generate 256 keystream bits that are not used
         int i = 0;
         int j = 0;
         int t;
-        int temp;
-        for (int k = 0; k <= 255; k++) {
-            i = (i + 1) % 256;
-            j = (j + S[i]) % 256;
+        byte temp;
+
+        // Generate 256 keystream bits that are not used
+        for (int k = 0; k < 256; k++) {
+            i = (i + 1) & 0xFF;
+            j = (j + S[i]) & 0xFF;
             temp = S[i];
             S[i] = S[j];
             S[j] = temp;
         }
 
-        // Now S is ready for use
-        i = 0;
-        j = 0;
         byte keystreamByte;
         // Every character in text is XOR'd with a keystream cipher
         for (int b = 0; b < textBytes.length; b++) {
-            i = (i + 1) % 256;
-            j = (j + S[i]) % 256;
+            i = (i + 1) & 0xFF;
+            j = (j + S[i]) & 0xFF;
             temp = S[i];
             S[i] = S[j];
             S[j] = temp;
-            t = (S[i] + S[j]) % 256;
-            keystreamByte = (byte) S[t];
+            t = (S[i] + S[j]) & 0xFF;
+            keystreamByte = S[t];
             result[b] = (byte) (keystreamByte ^ textBytes[b]);
         }
 //
@@ -154,56 +153,56 @@ public class RC4 {
     }
 
 
-    private static void handleMessage(String request) throws IOException {
-
-        byte[] reqBytes = request.getBytes();
-
-        // Find index of (255) char
-        int n = findSeparatorIndex(reqBytes);
-
-        byte[] keyBytes = new byte[n];
-        byte[] textBytes = new byte[reqBytes.length - n];
-
-        System.arraycopy(reqBytes, 0, keyBytes, 0, n);
-        System.arraycopy(reqBytes, n+1, textBytes, 0, reqBytes.length - n);
-        byte[] result = new byte[reqBytes.length - n];
-
-        // Initialize lookup table S using the repeating key
-        int[] S = initializeLookupTable(keyBytes);
-
-        // Generate 256 keystream bits that are not used
-        int i = 0;
-        int j = 0;
-        int t;
-        int temp;
-        for (int k = 0; k <= 255; k++) {
-            i = (i + 1) % 256;
-            j = (j + S[i]) % 256;
-            temp = S[i];
-            S[i] = S[j];
-            S[j] = temp;
-        }
-
-        // Now S is ready for use
-        i = 0;
-        j = 0;
-        byte keystreamByte;
-        // Every character in text is XOR'd with a keystream cipher
-        for (int b = 0; b < textBytes.length; b++) {
-            i = (i + 1) % 256;
-            j = (j + S[i]) % 256;
-            temp = S[i];
-            S[i] = S[j];
-            S[j] = temp;
-            t = (S[i] + S[j]) % 256;
-            keystreamByte = (byte) S[t];
-            result[b] = (byte) (keystreamByte ^ textBytes[b]);
-        }
+//    private static void handleMessage(String request) throws IOException {
 //
+//        byte[] reqBytes = request.getBytes();
 //
-//        for(int i = 0; i < textBytes.length; i++){
-//            result[i] = (byte) (keyBytes[i] ^ textBytes[i]);
+//        // Find index of (255) char
+//        int n = findSeparatorIndex(reqBytes);
+//
+//        byte[] keyBytes = new byte[n];
+//        byte[] textBytes = new byte[reqBytes.length - n];
+//
+//        System.arraycopy(reqBytes, 0, keyBytes, 0, n);
+//        System.arraycopy(reqBytes, n+1, textBytes, 0, reqBytes.length - n);
+//        byte[] result = new byte[reqBytes.length - n];
+//
+//        // Initialize lookup table S using the repeating key
+//        int[] S = initializeLookupTable(keyBytes);
+//
+//        // Generate 256 keystream bits that are not used
+//        int i = 0;
+//        int j = 0;
+//        int t;
+//        int temp;
+//        for (int k = 0; k <= 255; k++) {
+//            i = (i + 1) % 256;
+//            j = (j + S[i]) % 256;
+//            temp = S[i];
+//            S[i] = S[j];
+//            S[j] = temp;
 //        }
-        System.out.write(result);
-    }
+//
+//        // Now S is ready for use
+//        i = 0;
+//        j = 0;
+//        byte keystreamByte;
+//        // Every character in text is XOR'd with a keystream cipher
+//        for (int b = 0; b < textBytes.length; b++) {
+//            i = (i + 1) % 256;
+//            j = (j + S[i]) % 256;
+//            temp = S[i];
+//            S[i] = S[j];
+//            S[j] = temp;
+//            t = (S[i] + S[j]) % 256;
+//            keystreamByte = (byte) S[t];
+//            result[b] = (byte) (keystreamByte ^ textBytes[b]);
+//        }
+////
+////
+////        for(int i = 0; i < textBytes.length; i++){
+////            result[i] = (byte) (keyBytes[i] ^ textBytes[i]);
+////        }
+//        System.out.write(result);
+//    }
 }
