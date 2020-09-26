@@ -4,37 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-public class VernamCipher {
+public class Vernam {
 
     public static void main(String[] args) {
-
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        try {
-            // Read the line
-            StringBuilder request = new StringBuilder();
-            request.append(br.readLine());
-            String input = "";
-
-            do {
-                try {
-                    input = readLineWithTimeout(br);
-                    if (input != null) {
-                        request.append(input).append("\n");
-                    }
-                } catch (IOException e) {
-                    input = null;
-                }
-            } while (input != null);
-
-            br.close();
-            handleMessage(request.toString());
-
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-    }
-
-    public static void Vernam() {
 
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         try {

@@ -1,7 +1,7 @@
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-public class SubstitutionCipher {
+public class SubstitutionCipherBauke {
 
     private static final String abc = "abcdefghijklmnopqrstuvwxyz";
 
