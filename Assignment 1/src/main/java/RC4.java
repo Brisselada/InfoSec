@@ -16,9 +16,9 @@ public class RC4 {
         byte[] in = handleMessage(fileArray);
         byte[] out = Files.readAllBytes(Path.of("src\\main\\resources\\0.out"));
         System.out.println("filearray: " + fileArray);
-        System.out.println("in: \n");
+        System.out.println("\nin: ");
         System.out.write(in);
-        System.out.println("out: \n");
+        System.out.println("\nout: ");
         System.out.write(out);
 
 
