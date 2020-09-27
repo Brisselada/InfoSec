@@ -3,24 +3,20 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Feistel {
 
     public static void main(String[] args) throws IOException {
 
         //TODO: bytes should be read from input
-        //TODO: Feistel function should process 8 bytes, right now this is variable
-        byte[] fileArray = Files.readAllBytes(Path.of("src\\main\\resources\\feistel0.in"));
+        byte[] fileArray = Files.readAllBytes(Path.of("src\\main\\resources\\feistel2.in"));
         byte[] in = handleMessage(fileArray);
-        byte[] out = Files.readAllBytes(Path.of("src\\main\\resources\\feistel0.out"));
-        System.out.println("filearray: " + fileArray);
-        System.out.println("in: \n");
+        byte[] out = Files.readAllBytes(Path.of("src\\main\\resources\\feistel2.out"));
+//        System.out.println("filearray: " + fileArray);
+        System.out.println("\n");
         System.out.write(in);
-        System.out.println("out: \n");
+        System.out.println("\n");
         System.out.write(out);
-        //TODO: Output is still incorrect
     }
 
     /**
@@ -65,23 +61,22 @@ public class Feistel {
             // Left is XOR'd, Right passes
             byte[] tempL = new byte[4];
             for (int k = 0; k < 4; k++) {
-                //TODO: Repeat key if it doesn't fit partsize?
-                tempL[k] = (byte) ( L[k] ^ keyBytes[(iterations + k) % keyBytes.length]);
+                tempL[k] = (byte) ( L[k] ^ keyBytes[(i * 4) + k]);
             }
             L = tempL;
             prevL = L;
             prevR = R;
-
         }
 
+        // Concatenate L and R
         byte[] partResult = new byte[8];
-        System.arraycopy(L, 0, partResult, 0, 4);
-        System.arraycopy(R, 0, partResult, 4, 4);
+        System.arraycopy(R, 0, partResult, 0, 4);
+        System.arraycopy(L, 0, partResult, 4, 4);
 
         return partResult;
     }
 
-    private static byte[] decrypt(byte[] L, byte[] R, byte[] keyBytes, int iterations, int partSize) {
+    private static byte[] decrypt(byte[] L, byte[] R, byte[] keyBytes, int iterations) {
 
         // Determine what's left and what's right depending on iterations
         byte[] prevL = iterations % 2 == 0 ? R : L;
@@ -92,23 +87,22 @@ public class Feistel {
             R = prevL;
 
             // Left is XOR'd, Right passes
-            byte[] tempL = new byte[partSize];
-            for (int k = 0; k < partSize; k++) {
-                //TODO: Repeat key if it doesn't fit partsize?
-                tempL[k] = (byte) ( L[k] ^ keyBytes[(iterations + k) % partSize]);
+            byte[] tempL = new byte[4];
+            for (int k = 0; k < 4; k++) {
+                tempL[k] = (byte) ( L[k] ^ keyBytes[(i * 4) + k]);
             }
             L = tempL;
             prevL = L;
             prevR = R;
         }
 
-        byte[] result = new byte[partSize * 2];
-        System.arraycopy(L, 0, result, 0, partSize);
-        System.arraycopy(R, 0, result, partSize, partSize);
+        // Concatenate L and R
+        byte[] result = new byte[8];
+        System.arraycopy(R, 0, result, 0, 4);
+        System.arraycopy(L, 0, result, 4, 4);
 
         return result;
     }
-
 
 
     private static byte[] handleMessage(byte[] request) {
@@ -123,19 +117,11 @@ public class Feistel {
         System.arraycopy(request, 2, keyBytes, 0, n - 2);
         System.arraycopy(request, n+1, textBytes, 0, request.length - n - 1);
 
-
-        // Determine number of iterations depending on key
-//        int iterations = textBytes.length / (keyBytes.length / 2);
-
         // Counts how many times 4 fits in key length
         int iterations = keyBytes.length / 4;
 
-//        int partSize = textBytes.length / 2;
-
         // Amount of separate textParts that should be processed
         int textPartCount = textBytes.length / 8;
-        // Size of each textPart (should be 8);
-//        int partSize = textBytes.length / textPartCount;
 
         byte[] result = new byte[textBytes.length];
 
@@ -153,7 +139,7 @@ public class Feistel {
                 partResult = encrypt(L, R, keyBytes, iterations);
             }
             else {
-                partResult =  decrypt(L, R, keyBytes, iterations,4);
+                partResult =  decrypt(L, R, keyBytes, iterations);
             }
 
             // Append result with partResult
@@ -161,9 +147,5 @@ public class Feistel {
         }
 
         return result;
-
-//        byte[] result = encrypt(L, R, keyBytes, iterations, partSize);
-//
-//        return result;
     }
 }
