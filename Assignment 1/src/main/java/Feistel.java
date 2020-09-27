@@ -54,7 +54,7 @@ public class Feistel {
         return 0;
     }
 
-    private static byte[] encrypt(byte[] L, byte[] R, byte[] keyBytes, int iterations, int keySize) {
+    private static byte[] encrypt(byte[] L, byte[] R, byte[] keyBytes, int iterations) {
         byte[] prevL = R;
         byte[] prevR = L;
 
@@ -63,8 +63,8 @@ public class Feistel {
             R = prevL;
 
             // Left is XOR'd, Right passes
-            byte[] tempL = new byte[keySize];
-            for (int k = 0; k < keySize; k++) {
+            byte[] tempL = new byte[4];
+            for (int k = 0; k < 4; k++) {
                 //TODO: Repeat key if it doesn't fit partsize?
                 tempL[k] = (byte) ( L[k] ^ keyBytes[(iterations + k) % keyBytes.length]);
             }
@@ -74,11 +74,11 @@ public class Feistel {
 
         }
 
-        byte[] result = new byte[keySize * 2];
-        System.arraycopy(L, 0, result, 0, keySize);
-        System.arraycopy(R, 0, result, keySize, keySize);
+        byte[] partResult = new byte[8];
+        System.arraycopy(L, 0, partResult, 0, 4);
+        System.arraycopy(R, 0, partResult, 4, 4);
 
-        return result;
+        return partResult;
     }
 
     private static byte[] decrypt(byte[] L, byte[] R, byte[] keyBytes, int iterations, int partSize) {
@@ -135,30 +135,29 @@ public class Feistel {
         // Amount of separate textParts that should be processed
         int textPartCount = textBytes.length / 8;
         // Size of each textPart (should be 8);
-        int partSize = textBytes.length / textPartCount;
+//        int partSize = textBytes.length / textPartCount;
 
         byte[] result = new byte[textBytes.length];
 
         // Process each part of text
         for (int t = 0; t < textPartCount; t++) {
             // Split textPart into two pieces
-            byte[] L = new byte[partSize / 2];
-            byte[] R = new byte[partSize / 2];
-            System.arraycopy(textBytes, (partSize * t), L, 0, partSize / 2);
-            System.arraycopy(textBytes, (partSize * t) + (partSize / 2), R, 0, partSize / 2);
+            byte[] L = new byte[4];
+            byte[] R = new byte[4];
+            System.arraycopy(textBytes, (8 * t), L, 0, 4);
+            System.arraycopy(textBytes, (8 * t) + 4, R, 0, 4);
 
             byte[] partResult;
 
             if (encrypt) {
-                partResult = encrypt(L, R, keyBytes, iterations, partSize / 2);
+                partResult = encrypt(L, R, keyBytes, iterations);
             }
             else {
-                partResult =  decrypt(L, R, keyBytes, iterations, partSize / 2);
+                partResult =  decrypt(L, R, keyBytes, iterations,4);
             }
 
             // Append result with partResult
-
-            System.arraycopy(partResult, 0, result, (partSize * t), partSize);
+            System.arraycopy(partResult, 0, result, (8 * t), 8);
         }
 
         return result;
