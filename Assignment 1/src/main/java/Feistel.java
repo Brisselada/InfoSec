@@ -1,22 +1,78 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 
 public class Feistel {
 
     public static void main(String[] args) throws IOException {
 
+        //TODO: OPTIE 1: Proberen deze werkende te krijgen, loopt nu vast
+
+        InputStream inputStream = new BufferedInputStream(System.in);
+
+        try {
+            byte[] requestBytes = inputStream.readAllBytes();
+//            byte[] fileArray = Files.readAllBytes(Path.of("src\\main\\resources\\feistel2.in"));
+            byte[] result = handleMessage(requestBytes);
+            System.out.write(result);
+
+            inputStream.close();
+
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+
+
+//TODO: OPTIE 2: Pakt separator teken niet goed op met String -> byte[]
+
+//        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+//        try {
+//            // Read the line
+//            StringBuilder request = new StringBuilder();
+//            request.append(br.readLine());
+//            String input = "";
+//
+//            do {
+//                try {
+//                    input = readLineWithTimeout(br);
+//                    if (input != null) {
+//                        request.append(input);
+//                    }
+//                } catch (IOException e) {
+//                    input = null;
+//                }
+//            } while (input != null);
+//
+////            request.append("\n");
+//
+//            br.close();
+//            String builderResult = request.toString();
+//            byte[] requestBytes = builderResult.getBytes();
+//            byte[] result = handleMessage(requestBytes);
+//            System.out.write(result);
+//
+////            byte[] fileArray = Files.readAllBytes(Path.of("src\\main\\resources\\feistel2.in"));
+//
+//        } catch (Exception e) {
+//            System.out.println(e);
+//        }
+
+
+
+          //TODO: OPTIE 3: Dit is de oude oplossing die werkte
         //TODO: bytes should be read from input
-        byte[] fileArray = Files.readAllBytes(Path.of("src\\main\\resources\\feistel2.in"));
-        byte[] in = handleMessage(fileArray);
-        byte[] out = Files.readAllBytes(Path.of("src\\main\\resources\\feistel2.out"));
-//        System.out.println("filearray: " + fileArray);
-        System.out.println("\n");
-        System.out.write(in);
-        System.out.println("\n");
-        System.out.write(out);
+//        byte[] fileArray = Files.readAllBytes(Path.of("src\\main\\resources\\feistel2.in"));
+//        byte[] in = handleMessage(fileArray);
+//        byte[] out = Files.readAllBytes(Path.of("src\\main\\resources\\feistel2.out"));
+////        System.out.println("filearray: " + fileArray);
+//        System.out.println("\n");
+//        System.out.write(in);
+//        System.out.println("\n");
+//        System.out.write(out);
+
+
     }
 
     /**
@@ -41,7 +97,7 @@ public class Feistel {
 
 
     private static int findSeparatorIndex(byte[] reqBytes) {
-        byte target = (byte) 255;
+        byte target = (byte) 0xFF;
         for (int b = 2; b < reqBytes.length; b++){
             if (reqBytes[b] == target) {
                 return b;
