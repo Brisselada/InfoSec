@@ -60,7 +60,7 @@ public class KnapsackKeyValidation {
     private static int validateKeys(int m, int n, int[] privateKey, int[] publicKey) {
 
         // Return -1 if private key is invalid (weight of an element is not greater than sum of previous elements)
-        if (privateKey.length != publicKey.length)  { return -1; }
+        if (privateKey.length != publicKey.length)  { return 0; }
         if (!validatePrivateKey(privateKey, n)) { return -1; }
 
         // Check if m and n are relatively primes

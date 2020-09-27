@@ -9,15 +9,13 @@ public class Feistel {
 
         //TODO: OPTIE 1: Proberen deze werkende te krijgen, loopt nu vast
 
-        InputStream inputStream = new BufferedInputStream(System.in);
-
         try {
-            byte[] requestBytes = inputStream.readAllBytes();
+            byte[] requestBytes = System.in.readAllBytes();
 //            byte[] fileArray = Files.readAllBytes(Path.of("src\\main\\resources\\feistel2.in"));
             byte[] result = handleMessage(requestBytes);
             System.out.write(result);
 
-            inputStream.close();
+//            inputStream.close();
 
         } catch (Exception e) {
             System.out.println(e);
