@@ -3,19 +3,24 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Feistel {
 
     public static void main(String[] args) throws IOException {
 
-        byte[] fileArray = Files.readAllBytes(Path.of("src\\main\\resources\\feistel3.in"));
+        //TODO: bytes should be read from input
+        //TODO: Feistel function should process 8 bytes, right now this is variable
+        byte[] fileArray = Files.readAllBytes(Path.of("src\\main\\resources\\feistel0.in"));
         byte[] in = handleMessage(fileArray);
-        byte[] out = Files.readAllBytes(Path.of("src\\main\\resources\\feistel3.out"));
+        byte[] out = Files.readAllBytes(Path.of("src\\main\\resources\\feistel0.out"));
         System.out.println("filearray: " + fileArray);
         System.out.println("in: \n");
         System.out.write(in);
         System.out.println("out: \n");
         System.out.write(out);
+        //TODO: Output is still incorrect
     }
 
     /**
@@ -49,7 +54,7 @@ public class Feistel {
         return 0;
     }
 
-    private static byte[] encrypt(byte[] L, byte[] R, byte[] keyBytes, int iterations, int partSize) {
+    private static byte[] encrypt(byte[] L, byte[] R, byte[] keyBytes, int iterations, int keySize) {
         byte[] prevL = R;
         byte[] prevR = L;
 
@@ -58,8 +63,8 @@ public class Feistel {
             R = prevL;
 
             // Left is XOR'd, Right passes
-            byte[] tempL = new byte[partSize];
-            for (int k = 0; k < partSize; k++) {
+            byte[] tempL = new byte[keySize];
+            for (int k = 0; k < keySize; k++) {
                 //TODO: Repeat key if it doesn't fit partsize?
                 tempL[k] = (byte) ( L[k] ^ keyBytes[(iterations + k) % keyBytes.length]);
             }
@@ -69,9 +74,9 @@ public class Feistel {
 
         }
 
-        byte[] result = new byte[partSize * 2];
-        System.arraycopy(L, 0, result, 0, partSize);
-        System.arraycopy(R, 0, result, partSize, partSize);
+        byte[] result = new byte[keySize * 2];
+        System.arraycopy(L, 0, result, 0, keySize);
+        System.arraycopy(R, 0, result, keySize, keySize);
 
         return result;
     }
@@ -118,23 +123,46 @@ public class Feistel {
         System.arraycopy(request, 2, keyBytes, 0, n - 2);
         System.arraycopy(request, n+1, textBytes, 0, request.length - n - 1);
 
+
         // Determine number of iterations depending on key
-        int iterations = textBytes.length / (keyBytes.length / 2);
+//        int iterations = textBytes.length / (keyBytes.length / 2);
 
-        int partSize = textBytes.length / 2;
+        // Counts how many times 4 fits in key length
+        int iterations = keyBytes.length / 4;
 
-        // Split text into two pieces
-        byte[] L = new byte[partSize];
-        byte[] R = new byte[partSize];
-        System.arraycopy(textBytes, 0, L, 0, partSize);
-        System.arraycopy(textBytes, partSize, R, 0, partSize);
+//        int partSize = textBytes.length / 2;
 
-        if (encrypt) {
-            return encrypt(L, R, keyBytes, iterations, partSize);
+        // Amount of separate textParts that should be processed
+        int textPartCount = textBytes.length / 8;
+        // Size of each textPart (should be 8);
+        int partSize = textBytes.length / textPartCount;
+
+        byte[] result = new byte[textBytes.length];
+
+        // Process each part of text
+        for (int t = 0; t < textPartCount; t++) {
+            // Split textPart into two pieces
+            byte[] L = new byte[partSize / 2];
+            byte[] R = new byte[partSize / 2];
+            System.arraycopy(textBytes, (partSize * t), L, 0, partSize / 2);
+            System.arraycopy(textBytes, (partSize * t) + (partSize / 2), R, 0, partSize / 2);
+
+            byte[] partResult;
+
+            if (encrypt) {
+                partResult = encrypt(L, R, keyBytes, iterations, partSize / 2);
+            }
+            else {
+                partResult =  decrypt(L, R, keyBytes, iterations, partSize / 2);
+            }
+
+            // Append result with partResult
+
+            System.arraycopy(partResult, 0, result, (partSize * t), partSize);
         }
-        else {
-            return decrypt(L, R, keyBytes, iterations, partSize);
-        }
+
+        return result;
+
 //        byte[] result = encrypt(L, R, keyBytes, iterations, partSize);
 //
 //        return result;
