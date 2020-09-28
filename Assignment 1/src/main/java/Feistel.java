@@ -10,7 +10,17 @@ public class Feistel {
         //TODO: OPTIE 1: Proberen deze werkende te krijgen, loopt nu vast
 
         try {
-            byte[] requestBytes = System.in.readAllBytes();
+
+            int nRead;
+            byte[] data = new byte[16384];
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+            while ((nRead = readLineWithTimeout(data, data.length)) != -1) {
+                buffer.write(data, 0, nRead);
+            }
+
+            byte[] requestBytes = buffer.toByteArray();
+
 //            byte[] fileArray = Files.readAllBytes(Path.of("src\\main\\resources\\feistel2.in"));
             byte[] result = handleMessage(requestBytes);
             System.out.write(result);
@@ -75,21 +85,22 @@ public class Feistel {
 
     /**
      * Reads the line with a timeout
-     * @param in The supplied BufferedReader
      * @return Returns the line that has been read
      * @throws IOException
      */
-    private static String readLineWithTimeout(BufferedReader in) throws IOException {
-        int x = 1; // wait 1 second at most
+    private static int readLineWithTimeout(byte[] buffer, int nRead) throws IOException {
+        int x = 4; // wait 1 second at most
+
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
         long startTime = System.currentTimeMillis();
-        while ((System.currentTimeMillis() - startTime) < x * 1000 && !in.ready()) {
+        while ((System.currentTimeMillis() - startTime) < x * 1000 && !br.ready()) {
             // wait
         }
-        if (in.ready()) {
-            return in.readLine();
+        if (br.ready()) {
+            return System.in.read(buffer, 0, nRead);
         } else {
-            return null;
+            return -1;
         }
     }
 
