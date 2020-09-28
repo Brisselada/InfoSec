@@ -6,20 +6,46 @@ import java.nio.file.Paths;
 
 public class RC4 {
 
+    private static final byte[] S = new byte[256];
+    private static final byte[] K = new byte[256];
+
     public static void main(String[] args) throws IOException {
         //TODO IOException moet later weg
 //        String cipherText = Files.readString(Path.of("src\\main\\resources\\2.txt"), StandardCharsets.US_ASCII);
 //        System.out.println(cipherText);
 
+        try {
+            int nRead;
+            byte[] data = new byte[16384];
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
-        byte[] fileArray = Files.readAllBytes(Path.of("src\\main\\resources\\0.in"));
-        byte[] in = handleMessage(fileArray);
-        byte[] out = Files.readAllBytes(Path.of("src\\main\\resources\\0.out"));
-        System.out.println("filearray: " + fileArray);
-        System.out.println("\nin: ");
-        System.out.write(in);
-        System.out.println("\nout: ");
-        System.out.write(out);
+            while ((nRead = readLineWithTimeout(data, data.length)) != -1) {
+                buffer.write(data, 0, nRead);
+            }
+
+            byte[] requestBytes = buffer.toByteArray();
+
+//            requestBytes = Files.readAllBytes(Path.of("src\\main\\resources\\vernam0.in"));
+            byte[] result = handleMessage(requestBytes);
+            System.out.write(result);
+
+//            inputStream.close();
+
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+
+//        byte[] fileArray = Files.readAllBytes(Path.of("src\\main\\resources\\0.in"));
+//        byte[] in = handleMessage(fileArray);
+//        byte[] out = Files.readAllBytes(Path.of("src\\main\\resources\\RC40.out"));
+//        System.out.println("filearray: " + fileArray);
+//        System.out.println("\nin: ");
+//        System.out.write(in);
+//        System.out.println("\nout: ");
+//        System.out.write(out);
+
+
 
 
 
@@ -49,29 +75,50 @@ public class RC4 {
 //        }
     }
 
+
     /**
      * Reads the line with a timeout
-     * @param in The supplied BufferedReader
      * @return Returns the line that has been read
      * @throws IOException
      */
-    private static String readLineWithTimeout(BufferedReader in) throws IOException {
+    private static int readLineWithTimeout(byte[] buffer, int nRead) throws IOException {
         int x = 1; // wait 1 second at most
 
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
         long startTime = System.currentTimeMillis();
-        while ((System.currentTimeMillis() - startTime) < x * 1000 && !in.ready()) {
+        while ((System.currentTimeMillis() - startTime) < x * 1000 && !br.ready()) {
             // wait
         }
-        if (in.ready()) {
-            return in.readLine();
+        if (br.ready()) {
+            return System.in.read(buffer, 0, nRead);
         } else {
-            return null;
+            return -1;
         }
     }
 
+//    /**
+//     * Reads the line with a timeout
+//     * @param in The supplied BufferedReader
+//     * @return Returns the line that has been read
+//     * @throws IOException
+//     */
+//    private static String readLineWithTimeout(BufferedReader in) throws IOException {
+//        int x = 1; // wait 1 second at most
+//
+//        long startTime = System.currentTimeMillis();
+//        while ((System.currentTimeMillis() - startTime) < x * 1000 && !in.ready()) {
+//            // wait
+//        }
+//        if (in.ready()) {
+//            return in.readLine();
+//        } else {
+//            return null;
+//        }
+//    }
+
     private static byte[] initializeLookupTable(byte[] keyArray) {
-        byte[] S = new byte[256];
-        byte[] K = new byte[256];
+
         int N = keyArray.length;
         for (int i = 0; i < 256; i++) {
             S[i] = (byte) i;
@@ -80,8 +127,8 @@ public class RC4 {
         int j = 0;
         byte temp;
         for (int i = 0; i < 256; i++) {
+//            j = (j + S[i] + K[i]) & 0xFF;
             j = (j + S[i] + K[i]) & 0xFF;
-//            j = (j + S[i] + K[i]) % 256;
             temp = S[i];
             S[i] = S[j];
             S[j] = temp;
@@ -110,12 +157,13 @@ public class RC4 {
         byte[] keyBytes = new byte[n];
         byte[] textBytes = new byte[reqBytes.length - n - 1];
 
-        System.arraycopy(reqBytes, 0, keyBytes, 0, n - 1);
+        System.arraycopy(reqBytes, 0, keyBytes, 0, n);
         System.arraycopy(reqBytes, n+1, textBytes, 0, reqBytes.length - n -1);
         byte[] result = new byte[textBytes.length];
 
         // Initialize lookup table S using the repeating key
-        byte[] S = initializeLookupTable(keyBytes);
+//        byte[] S = initializeLookupTable(keyBytes);
+        initializeLookupTable(keyBytes);
 
         int i = 0;
         int j = 0;
