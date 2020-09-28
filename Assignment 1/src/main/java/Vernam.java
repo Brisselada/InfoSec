@@ -10,7 +10,7 @@ public class Vernam {
         try {
             // Read the line
             StringBuilder request = new StringBuilder();
-            request.append(br.readLine());
+            request.append(br.readLine()).append("\n");
             String input = "";
 
             do {
