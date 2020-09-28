@@ -21,7 +21,7 @@ public class Feistel {
 
             byte[] requestBytes = buffer.toByteArray();
 
-//            byte[] fileArray = Files.readAllBytes(Path.of("src\\main\\resources\\feistel2.in"));
+//            requestBytes = Files.readAllBytes(Path.of("src\\main\\resources\\feistel2.in"));
             byte[] result = handleMessage(requestBytes);
             System.out.write(result);
 
@@ -89,7 +89,7 @@ public class Feistel {
      * @throws IOException
      */
     private static int readLineWithTimeout(byte[] buffer, int nRead) throws IOException {
-        int x = 4; // wait 1 second at most
+        int x = 1; // wait 1 second at most
 
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
