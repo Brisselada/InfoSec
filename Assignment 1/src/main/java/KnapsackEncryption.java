@@ -1,11 +1,15 @@
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.math.*;
 import java.io.InputStreamReader;
 
 public class KnapsackEncryption {
 
+    /***
+     * Start a knapsack encryption instance and read user input to encrypt or decrypt.
+     * @param args The arguments for using knapsack encryption
+     */
     public static void main(String[] args) {
-
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         try {
             String encryptionMethod = br.readLine();
@@ -16,7 +20,8 @@ public class KnapsackEncryption {
 
                 String line;
                 while ((line = br.readLine()) != null) {
-                    encrypt(publicKey, Integer.parseInt(line));
+                    int sum = EncryptKnapsack(publicKey, Integer.parseInt(line));
+                    System.out.println(sum);
                 }
             }
             else {
@@ -24,21 +29,27 @@ public class KnapsackEncryption {
                 String[] mn = br.readLine().split(" ");
                 int m = Integer.parseInt(mn[0]);
                 int n = Integer.parseInt(mn[1]);
-                String[] knapSackStrings = br.readLine().split(" ");
-                int[] knapSack = stringArrToIntArr(knapSackStrings);
+                String[] knapsackStrings = br.readLine().split(" ");
+                int[] knapsack = stringArrToIntArr(knapsackStrings);
 
                 String line;
                 while ((line = br.readLine()) != null) {
-                    decrypt(m, n, knapSack, Integer.parseInt(line));
+                    int result = DecryptKnapsack(m, n, knapsack, Integer.parseInt(line));
+                    System.out.println(result);
                 }
             }
 
             br.close();
-        } catch (Exception e) {
-            System.out.println(e);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
+    /***
+     * Parse string array to int array to handle letters as numbers for knapsack.
+     * @param stringArr The String array to parse.
+     * @return The parsed int array result.
+     */
     private static int[] stringArrToIntArr(String[] stringArr) {
         int[] result = new int[stringArr.length];
         for (int i = 0; i < stringArr.length; i++) {
@@ -47,15 +58,12 @@ public class KnapsackEncryption {
         return result;
     }
 
-    private static int[] stringToIntArr(String string) {
-        char[] stringArr = string.toCharArray();
-        int[] result = new int[stringArr.length];
-        for (int i = 0; i < stringArr.length; i++) {
-            result[i] = stringArr[i];
-        }
-        return result;
-    }
-
+    /***
+     * Parse numbers to bits (1/0) that will be used to calculate the knapsack sum.
+     * @param j Input number
+     * @param keyLength total key length.
+     * @return the bit result.
+     */
     private static int[] intToBits(int j, int keyLength) {
         int[] result = new int[keyLength];
         int maxBits;
@@ -69,6 +77,11 @@ public class KnapsackEncryption {
         return result;
     }
 
+    /***
+     * Parse bits to integers to calculate the decrypted knapsack result.
+     * @param j Input number
+     * @return The total sum.
+     */
     private static int bitsToInt(int[] j) {
         int keyLength = j.length;
 
@@ -81,21 +94,31 @@ public class KnapsackEncryption {
         return sum;
     }
 
-    private static int[] solveKnapsack(int[] knapSack, int target ) {
-        int keyLength = knapSack.length;
+    /***
+     * Solve knapsack using a given integer array (super increasing knapsack).
+     * @param knapsack Input knapsack integer array.
+     * @param target Target sum to solve.
+     * @return Bit array result.
+     */
+    private static int[] solveKnapsack(int[] knapsack, int target ) {
+        int keyLength = knapsack.length;
         int[] result = new int[keyLength];
 
         for (int i = (keyLength - 1); i >= 0; i--) {
-            if (knapSack[i] <= target) {
+            if (knapsack[i] <= target) {
                 result[i] = 1;
-                target -= knapSack[i];
+                target -= knapsack[i];
             }
         }
         return result;
     }
 
-    private static void encrypt(int[] publicKey, int p) {
-
+    /***
+     * Encrypt input with a public key using knapsack cipher.
+     * @param publicKey Public key to encrypt with.
+     * @param p Input number
+     */
+    public static int EncryptKnapsack(int[] publicKey, int p) {
         int keyLength = publicKey.length;
         int[] bits = intToBits(p, keyLength);
         int sum = 0;
@@ -105,11 +128,19 @@ public class KnapsackEncryption {
                 sum += publicKey[i];
             }
         }
-        System.out.println(sum);
+
+        return sum;
     }
 
-    private static void decrypt(int m, int n, int[] knapsack, int c) {
-
+    /***
+     * Decrypt input using knapsack cipher.
+     * @param m Input M.
+     * @param n Input N.
+     * @param knapsack Input knapsack array.
+     * @param c Input character number.
+     * @return Decrypted value
+     */
+    public static int DecryptKnapsack(int m, int n, int[] knapsack, int c) {
         // Determine the modular inverse of m
         BigInteger bigM = BigInteger.valueOf(m);
         BigInteger bigN = BigInteger.valueOf(n);
@@ -122,7 +153,6 @@ public class KnapsackEncryption {
         int[] cypherBits = solveKnapsack(knapsack, cypherValue);
 
         // Convert found bits
-        int result = bitsToInt(cypherBits);
-        System.out.println(result);
+        return bitsToInt(cypherBits);
     }
 }
