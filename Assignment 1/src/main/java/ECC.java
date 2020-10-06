@@ -71,6 +71,7 @@ public class ECC {
         BigInteger bgm = BigDecimal.valueOf(m).toBigInteger();
 
         return bga.modInverse(bgm).doubleValue();
+
     }
 
 
@@ -130,16 +131,18 @@ public class ECC {
 
     public static String ECCKeyExchange(double x, double y, double a, double b, double p, double m, double n) {
 
-        double[] alice = ECC.computePointMultiplication(x, y, m, p, a);
-        double[] bob = ECC.computePointMultiplication(x, y, n, p, a);
+        try {
+            double[] alice = ECC.computePointMultiplication(x, y, m, p, a);
+            double[] bob = ECC.computePointMultiplication(x, y, n, p, a);
 
-        // The 2 points below should be the same.
-        double[] sharedSecretAlice = ECC.computePointMultiplication(bob[0], bob[1], m, p, a);
-        double[] sharedSecretBob = ECC.computePointMultiplication(alice[0], alice[1], n, p, a);
+            // The 2 points below should be the same.
+            double[] sharedSecretAlice = ECC.computePointMultiplication(bob[0], bob[1], m, p, a);
+            double[] sharedSecretBob = ECC.computePointMultiplication(alice[0], alice[1], n, p, a);
+            return "(" + fmt(sharedSecretAlice[0]) + ", " + fmt(sharedSecretAlice[1]) + ")";
 
-
-
-        return "(" + fmt(sharedSecretAlice[0]) + ", " + fmt(sharedSecretAlice[1]) + ")";
+        } catch (ArithmeticException e) {
+            return "(" + fmt(x) + ", " + fmt(y) + ")";
+        }
     }
 
 
