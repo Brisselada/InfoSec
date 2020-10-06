@@ -9,15 +9,6 @@ public class ECC {
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in), 20000);
 
-
-//            double res = modInverse(-9, 5);
-
-//              TEST should be (2,0)
-//            double[] res = ECC.solveCurve(1,4,3,1, 5, 2);
-
-//            double res = ECC.computePointMultiplication(1,0, 19, 5, 2);
-
-
             String[] input = br.readLine().split(",");
 
             double x = Double.parseDouble(input[0].replace("(", ""));
@@ -52,7 +43,6 @@ public class ECC {
     }
 
     private static double modulo(double a, double b) {
-
         // no division by zero
         if (b == 0) {
             return a;
@@ -112,22 +102,6 @@ public class ECC {
 
         return  Q;
     }
-
-
-//    private static double[] computePointMultiplication(double x, double y, double multiplication, double p, double a) {
-//        double[] Q = new double[] {x,y};
-//        double[] N = new double[] {x,y};
-////        Q = ECC.solveCurve(Q[0], Q[1], N[0], N[1], p, a);
-//
-//        for (int i = 0; i < multiplication - 1; i ++) {
-//            Q = ECC.solveCurve(Q[0], Q[1], N[0], N[1], p, a);
-//            // double points
-////            N[0] = N[0] * 2;
-////            N[1] = N[1] * 2;
-//        }
-//
-//        return Q;
-//    }
 
     public static String ECCKeyExchange(double x, double y, double a, double b, double p, double m, double n) {
 

@@ -54,7 +54,6 @@ public class RSA {
 
         // Private key:
         double d = modInverse(e, modulo);
-
         // Public key: (N, e)
 
         StringBuilder results = new StringBuilder();
@@ -67,12 +66,93 @@ public class RSA {
                 results.append((int) C).append('\n');
             } else {
                 double C = Double.parseDouble(line);
-                double M = RSA.repeatedSquare(C, d, N);
+                double M = RSA.ChineseRemainder(C, d, N, p, q);
                 results.append((int) M).append('\n');
             }
         }
 
         return results.toString();
+    }
+
+    private static double modulo(double a, double b) {
+        // no division by zero
+        if (b == 0) {
+            return a;
+        }
+
+        if (a < 0) {
+            double factor = Math.ceil(a * -1 / b);
+            a += factor * b;
+        }
+        return  a % b;
+    }
+
+
+    private static double ChineseRemainderExponent(double number, double exponent, double modulo) {
+        if (isPrime(modulo)) {
+            double reducedExponent = modulo(exponent, modulo - 1);
+            double reducedNumber = modulo(number, modulo);
+            return repeatedSquare(reducedNumber, reducedExponent, modulo);
+        }
+        return repeatedSquare(number, exponent, modulo);
+    }
+
+    private static double ChineseRemainder(double C, double d, double N, double p, double q) {
+        if (isRelativelyPrime(p, q)){
+
+            double m1 = ChineseRemainderExponent(C, d, p);
+            double m2 = ChineseRemainderExponent(C, d, q);
+
+            if (m1 == 0|| m2 == 0) {
+                return RSA.repeatedSquare(C, d, N);
+            }
+
+            if (m1 > m2) {
+                double x = (m1 - m2) / modulo(q, p);
+                return q * x + m2;
+            } else {
+                // Dit werkt nog niet dus
+                double x = (m2 - m1) / modulo(p, q);
+                return p * x + m1;
+            }
+
+        } else {
+            return RSA.repeatedSquare(C, d, N);
+        }
+    }
+
+    /***
+     * Check if two numbers are relatively prime
+     * @param m Input m
+     * @param n Input n
+     * @return True if m and n are relatively prime.
+     */
+    private static boolean isRelativelyPrime(double m, double n) {
+        double temp;
+        while(n != 0){
+            temp = m;
+            m = n;
+            n = temp % n;
+        }
+        return m == 1;
+    }
+
+    private static boolean isPrime(double n) {
+        int i = 2;
+        boolean notPrime = false;
+        while(i <= n/2)
+        {
+            // condition for nonprime number
+            if(n % i == 0)
+            {
+                notPrime = true;
+                break;
+            }
+
+            ++i;
+        }
+
+        return !notPrime;
     }
 
     private static double repeatedSquare(double a, double b, double modulo) {
@@ -103,7 +183,7 @@ public class RSA {
      * @throws IOException
      */
     private static String readLineWithTimeout(BufferedReader in) throws IOException {
-        double x = 0.2; // wait 0.2 second at most
+        double x = 0.1; // wait 0.2 second at most
 
         long startTime = System.currentTimeMillis();
         while ((System.currentTimeMillis() - startTime) < x * 1000 && !in.ready()) {
