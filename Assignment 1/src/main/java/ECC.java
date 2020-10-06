@@ -61,7 +61,6 @@ public class ECC {
         BigInteger bgm = BigDecimal.valueOf(m).toBigInteger();
 
         return bga.modInverse(bgm).doubleValue();
-
     }
 
 

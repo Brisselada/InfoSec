@@ -1,8 +1,7 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.math.BigDecimal;
-import java.math.BigInteger;
+import java.util.HashMap;
 
 public class RSA {
 
@@ -47,6 +46,19 @@ public class RSA {
 
     }
 
+    private static double modInverse(double a, double m)
+    {
+        if (GCD(a,m) != 1) {
+            return -1;
+        }
+        int x;
+        for (x = 1; x < m; x++) {
+            if ((a * x) % m == 1) {
+                break;
+            }
+        }
+        return x;
+    }
 
     public static String RSACipher(boolean encrypt, double p, double q, double e, String inputText) {
         double N = p * q;
@@ -116,7 +128,7 @@ public class RSA {
     }
 
 
-    private static double evaluate(double a[], double b[], double n)
+    private static double solveSimultaneousPairs(double a[], double b[], double n)
     {
         double c = 1;
         for (int k = 0; k < n; k++)
@@ -154,30 +166,22 @@ public class RSA {
         return -1;	 // no solution
     }
 
+    private static HashMap<String, Double> hashmap = new HashMap<String, Double>();
 
     private static double ChineseRemainder(double C, double d, double N, double p, double q) {
+        String key = "" + C + d + N + p + q;
+        if (hashmap.containsKey(key)) {
+            return hashmap.get(key);
+        }
         if (isRelativelyPrime(p, q)){
 
             double m1 = ChineseRemainderExponent(C, d, p);
             double m2 = ChineseRemainderExponent(C, d, q);
 
-//            if (m1 == 0|| m2 == 0) {
-//                return RSA.repeatedSquare(C, d, N);
-//            }
+            double result = solveSimultaneousPairs(new double[]{m1, m2}, new double[] {p, q}, 2);
 
-
-
-            return evaluate(new double[]{m1, m2}, new double[] {p, q}, 2);
-
-
-//            if (m1 > m2) {
-//                double x = (m1 - m2) / modulo(q, p);
-//                return q * x + m2;
-//            } else {
-//                // Dit werkt nog niet dus
-//                double x = (m2 - m1) / modulo(p, q);
-//                return p * x + m1;
-//            }
+            hashmap.put("" + C + d + N + p + q, result);
+            return result;
 
         } else {
             return RSA.repeatedSquare(C, d, N);
@@ -231,14 +235,6 @@ public class RSA {
         return currentValue;
     }
 
-    private static double modInverse(double a, double m)
-    {
-        BigInteger bga = BigDecimal.valueOf(a).toBigInteger();
-        BigInteger bgm = BigDecimal.valueOf(m).toBigInteger();
-
-        return bga.modInverse(bgm).doubleValue();
-    }
-
     /**
      * Reads the line with a timeout
      * @param in The supplied BufferedReader
@@ -246,7 +242,7 @@ public class RSA {
      * @throws IOException
      */
     private static String readLineWithTimeout(BufferedReader in) throws IOException {
-        double x = 0.1; // wait 0.2 second at most
+        double x = 0.02; // wait 0.2 second at most
 
         long startTime = System.currentTimeMillis();
         while ((System.currentTimeMillis() - startTime) < x * 1000 && !in.ready()) {
