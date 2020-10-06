@@ -97,24 +97,87 @@ public class RSA {
         return repeatedSquare(number, exponent, modulo);
     }
 
+    private static double GCD(double a, double b)
+    {
+        if (b == 0)
+            return a;
+
+        return GCD(b, a % b);
+    }
+
+    private static double LCM(double gcd, double b[], double n)
+    {
+        double total = 1;
+
+        for (int k = 0; k < n; k++)
+            total *= b[k];
+
+        return total/gcd;
+    }
+
+
+    private static double evaluate(double a[], double b[], double n)
+    {
+        double c = 1;
+        for (int k = 0; k < n; k++)
+            c *= b[k];
+
+        double gcd = 0;
+        for (int k = 0; k < n; k++)
+            gcd = GCD(gcd, b[k]);
+
+        for (int k = 0; k < n; k++)
+        {
+            if ((a[k] % 2 == 1) && (b[k] % 2 == 0))
+            {
+                for (int j = k + 1; j < n; j++)
+                    if ((a[j] % 2 == 0) && (b[j] % 2 == 0))
+                        return -1;	  // no solution
+            }
+        }
+
+        double lcm = LCM(gcd, b, n);
+
+        for (int k = 0; k < lcm; k++)
+        {
+            int j;
+            for (j = 0; j < n; j++)
+                if (k % b[j] != a[j])
+                    break;
+
+            if (j == n)
+            {
+                return k;
+            }
+        }
+
+        return -1;	 // no solution
+    }
+
+
     private static double ChineseRemainder(double C, double d, double N, double p, double q) {
         if (isRelativelyPrime(p, q)){
 
             double m1 = ChineseRemainderExponent(C, d, p);
             double m2 = ChineseRemainderExponent(C, d, q);
 
-            if (m1 == 0|| m2 == 0) {
-                return RSA.repeatedSquare(C, d, N);
-            }
+//            if (m1 == 0|| m2 == 0) {
+//                return RSA.repeatedSquare(C, d, N);
+//            }
 
-            if (m1 > m2) {
-                double x = (m1 - m2) / modulo(q, p);
-                return q * x + m2;
-            } else {
-                // Dit werkt nog niet dus
-                double x = (m2 - m1) / modulo(p, q);
-                return p * x + m1;
-            }
+
+
+            return evaluate(new double[]{m1, m2}, new double[] {p, q}, 2);
+
+
+//            if (m1 > m2) {
+//                double x = (m1 - m2) / modulo(q, p);
+//                return q * x + m2;
+//            } else {
+//                // Dit werkt nog niet dus
+//                double x = (m2 - m1) / modulo(p, q);
+//                return p * x + m1;
+//            }
 
         } else {
             return RSA.repeatedSquare(C, d, N);
