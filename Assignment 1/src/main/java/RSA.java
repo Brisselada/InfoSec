@@ -62,7 +62,7 @@ public class RSA {
         for (String line : inputText.split("\n")) {
             if (encrypt) {
                 double M = Double.parseDouble(line);
-                double C = RSA.repeatedSquare(M, e, N);
+                double C = RSA.ChineseRemainder(M, e, N, p, q);
                 results.append((int) C).append('\n');
             } else {
                 double C = Double.parseDouble(line);
