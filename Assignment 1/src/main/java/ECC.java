@@ -12,11 +12,10 @@ public class ECC {
 
 //            double res = modInverse(-9, 5);
 
-//              TEST
+//              TEST should be (2,0)
 //            double[] res = ECC.solveCurve(1,4,3,1, 5, 2);
 
-//             TEST
-//            double[] res = ECC.computePointMultiplication(1,2,15,5, -7);
+//            double res = ECC.computePointMultiplication(1,0, 19, 5, 2);
 
 
             String[] input = br.readLine().split(",");
@@ -53,6 +52,12 @@ public class ECC {
     }
 
     private static double modulo(double a, double b) {
+
+        // no division by zero
+        if (b == 0) {
+            return a;
+        }
+
         if (a < 0) {
             double factor = Math.ceil(a * -1 / b);
             a += factor * b;
@@ -76,7 +81,7 @@ public class ECC {
         if (x1 != x2 || y1 != y2) {
             m = (y2 - y1) * modInverse((x2 - x1), p);
         } else {
-            m = ((3 * x1 + a) / Math.pow((2 * y1), -1));
+            m = ((3 * Math.pow(x1, 2) + a) * modInverse((2 * y1), p));
         }
 
         m = modulo(m, p);
@@ -87,19 +92,41 @@ public class ECC {
     }
 
     private static double[] computePointMultiplication(double x, double y, double multiplication, double p, double a) {
-        double[] Q = new double[] {x,y};
-        double[] N = new double[] {x,y};
-//        Q = ECC.solveCurve(Q[0], Q[1], N[0], N[1], p, a);
 
-        for (int i = 0; i < multiplication; i ++) {
-            Q = ECC.solveCurve(Q[0], Q[1], N[0], N[1], p, a);
-            // double points
-//            N[0] = N[0] * 2;
-//            N[1] = N[1] * 2;
+        char[] bits = Integer.toBinaryString((int) multiplication).substring(1).toCharArray();
+
+        double[] Q = new double[] {x,y};
+
+        for (char bit : bits) {
+            if (bit == '1') {
+                // double
+                Q = ECC.solveCurve(Q[0], Q[1], Q[0], Q[1], p, a);
+                // addition
+                Q = ECC.solveCurve(Q[0], Q[1], x, y, p, a);
+            } else {
+                // double
+                Q = ECC.solveCurve(Q[0], Q[1], Q[0], Q[1], p, a);
+            }
         }
 
-        return Q;
+        return  Q;
     }
+
+
+//    private static double[] computePointMultiplication(double x, double y, double multiplication, double p, double a) {
+//        double[] Q = new double[] {x,y};
+//        double[] N = new double[] {x,y};
+////        Q = ECC.solveCurve(Q[0], Q[1], N[0], N[1], p, a);
+//
+//        for (int i = 0; i < multiplication - 1; i ++) {
+//            Q = ECC.solveCurve(Q[0], Q[1], N[0], N[1], p, a);
+//            // double points
+////            N[0] = N[0] * 2;
+////            N[1] = N[1] * 2;
+//        }
+//
+//        return Q;
+//    }
 
     public static String ECCKeyExchange(double x, double y, double a, double b, double p, double m, double n) {
 
