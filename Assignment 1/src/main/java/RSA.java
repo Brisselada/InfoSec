@@ -1,7 +1,6 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
 
 public class RSA {
 
@@ -101,12 +100,9 @@ public class RSA {
 
 
     private static double ChineseRemainderExponent(double number, double exponent, double modulo) {
-        if (isPrime(modulo)) {
-            double reducedExponent = modulo(exponent, modulo - 1);
-            double reducedNumber = modulo(number, modulo);
-            return exp(reducedNumber, reducedExponent, modulo);
-        }
-        return exp(number, exponent, modulo);
+        double reducedExponent = modulo(exponent, modulo - 1);
+        double reducedNumber = modulo(number, modulo);
+        return exp(reducedNumber, reducedExponent, modulo);
     }
 
     private static double GCD(double a, double b)
@@ -117,47 +113,47 @@ public class RSA {
         return GCD(b, a % b);
     }
 
-    private static double LCM(double gcd, double b[], double n)
+    private static double LCM(double gcd, double[] b)
     {
         double total = 1;
 
-        for (int k = 0; k < n; k++)
+        for (int k = 0; k < (double) 2; k++)
             total *= b[k];
 
         return total/gcd;
     }
 
 
-    private static double solveSimultaneousPairs(double a[], double b[], double n)
+    private static double solveSimultaneousPairs(double[] a, double[] b)
     {
         double c = 1;
-        for (int k = 0; k < n; k++)
+        for (int k = 0; k < (double) 2; k++)
             c *= b[k];
 
         double gcd = 0;
-        for (int k = 0; k < n; k++)
+        for (int k = 0; k < (double) 2; k++)
             gcd = GCD(gcd, b[k]);
 
-        for (int k = 0; k < n; k++)
+        for (int k = 0; k < (double) 2; k++)
         {
             if ((a[k] % 2 == 1) && (b[k] % 2 == 0))
             {
-                for (int j = k + 1; j < n; j++)
+                for (int j = k + 1; j < (double) 2; j++)
                     if ((a[j] % 2 == 0) && (b[j] % 2 == 0))
                         return -1;	  // no solution
             }
         }
 
-        double lcm = LCM(gcd, b, n);
+        double lcm = LCM(gcd, b);
 
         for (int k = 0; k < lcm; k++)
         {
             int j;
-            for (j = 0; j < n; j++)
+            for (j = 0; j < (double) 2; j++)
                 if (k % b[j] != a[j])
                     break;
 
-            if (j == n)
+            if (j == (double) 2)
             {
                 return k;
             }
@@ -166,26 +162,11 @@ public class RSA {
         return -1;	 // no solution
     }
 
-    private static HashMap<String, Double> hashmap = new HashMap<String, Double>();
-
     private static double ChineseRemainder(double C, double d, double N, double p, double q) {
-        String key = "" + C + d + N + p + q;
-        if (hashmap.containsKey(key)) {
-            return hashmap.get(key);
-        }
-        if (isRelativelyPrime(p, q)){
+        double m1 = ChineseRemainderExponent(C, d, p);
+        double m2 = ChineseRemainderExponent(C, d, q);
 
-            double m1 = ChineseRemainderExponent(C, d, p);
-            double m2 = ChineseRemainderExponent(C, d, q);
-
-            double result = solveSimultaneousPairs(new double[]{m1, m2}, new double[] {p, q}, 2);
-
-            hashmap.put("" + C + d + N + p + q, result);
-            return result;
-
-        } else {
-            return RSA.exp(C, d, N);
-        }
+        return solveSimultaneousPairs(new double[]{m1, m2}, new double[] {p, q});
     }
 
     /***
