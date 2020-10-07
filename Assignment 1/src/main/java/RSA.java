@@ -104,9 +104,9 @@ public class RSA {
         if (isPrime(modulo)) {
             double reducedExponent = modulo(exponent, modulo - 1);
             double reducedNumber = modulo(number, modulo);
-            return repeatedSquare(reducedNumber, reducedExponent, modulo);
+            return exp(reducedNumber, reducedExponent, modulo);
         }
-        return repeatedSquare(number, exponent, modulo);
+        return exp(number, exponent, modulo);
     }
 
     private static double GCD(double a, double b)
@@ -184,7 +184,7 @@ public class RSA {
             return result;
 
         } else {
-            return RSA.repeatedSquare(C, d, N);
+            return RSA.exp(C, d, N);
         }
     }
 
@@ -222,6 +222,24 @@ public class RSA {
         return !notPrime;
     }
 
+    private static double exp(double a, double b, double modulo) {
+        if (b == 0) {
+            return 1 % modulo;
+        }
+
+        if (b == 1) {
+            return a % modulo;
+        }
+
+        // if b is odd
+        if (b % 2 != 0) {
+            return ((a % modulo) * exp(a, b -1, modulo) % modulo);
+        }
+
+        double result = exp(a, b /2, modulo);
+        return (result * result) % modulo;
+    }
+
     private static double repeatedSquare(double a, double b, double modulo) {
         char[] binary = ("0" + Long.toBinaryString((long) b)).toCharArray();
 
@@ -234,6 +252,7 @@ public class RSA {
 
         return currentValue;
     }
+
 
     /**
      * Reads the line with a timeout
