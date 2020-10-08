@@ -59,13 +59,37 @@ public class RSA {
         return x;
     }
 
+    private static int[] egcd(int x, int y) {
+        int[] result = new int[3];
+        int floordiv;
+        if (y == 0) {
+            result[0] = x;
+            result[1] = 1;
+            result[2] = 0;
+        } else {
+            floordiv = x / y;
+            result = egcd(y, x % y);
+            int temp = result[1] - floordiv * result[2];
+            result[1] = result[2];
+            result[2] = temp;
+        }
+        return result;
+    }
+
+//    private static double FindSmallerCoprime(double n) {
+//        for (double e = 2; e < n; e++) {
+//            double[] gcd = egcd(n, e);
+//            if (gcd[0] == 1) {
+//                return e;
+//            }
+//        }
+//        return -1;
+//    }
+
     public static String RSACipher(boolean encrypt, double p, double q, double e, String inputText) {
         double N = p * q;
-        double modulo = (p - 1) * (q - 1);
-
-        // Private key:
-        double d = modInverse(e, modulo);
-        // Public key: (N, e)
+        double phiN = (p - 1) * (q - 1);
+        double d = -1;
 
         StringBuilder results = new StringBuilder();
 
@@ -73,11 +97,23 @@ public class RSA {
         for (String line : inputText.split("\n")) {
             if (encrypt) {
                 double M = Double.parseDouble(line);
-                double C = RSA.ChineseRemainder(M, e, N, p, q);
+                double C = RSA.exp(M, e, N);
+//                double C = RSA.ChineseRemainder(M, e, N, p, q);
                 results.append((int) C).append('\n');
             } else {
+
+                if (d == -1) {
+                    int[] x = egcd((int) e, (int) phiN);
+                    d = x[1];
+
+                    if(d < 0) {
+                        d = d + phiN;
+                    }
+                }
+
                 double C = Double.parseDouble(line);
-                double M = RSA.ChineseRemainder(C, d, N, p, q);
+                double M = RSA.exp(C, d, N);
+//                double M = RSA.ChineseRemainder(C, d, N, p, q);
                 results.append((int) M).append('\n');
             }
         }
