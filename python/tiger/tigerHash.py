@@ -31,7 +31,7 @@ def intToBitArray(input):
     return res   
 
 def chunkInput(array, messageLength):
-    messageLength = intToBitArray(messageLength)
+    messageLength = intToBitArray(messageLength * 8)
     array.append(1)
 
     while((len(array) + len(messageLength)) % 512 != 0):
@@ -61,6 +61,14 @@ def Fround(a, b, c, Wi, m):
     return (a, b, c)
 
 def fm(a, b, c, x, m):
+
+    # c = c ^ x
+    # a = a - S0[((c) >> (0*8))&0xFF] ^ S1[((c) >> ( 2*8)) & 0xFF] ^ S2[((c) >> (4*8))&0xFF] ^ S3[((c) >> ( 6*8)) & 0xFF]
+    # b = b + S3[((c) >> (1*8))&0xFF] ^ S2[((c) >> ( 3*8)) & 0xFF] ^ S1[((c) >> (5*8))&0xFF] ^ S0[((c) >> ( 7*8)) & 0xFF]
+    # b = b * m
+
+
+    # Dit stukje is een voorbeeld gevonden op internet.
     c ^= x
     c &= 0xffffffffffffffff
     a -= S0[((c) >> (0*8))&0xFF] ^ S1[((c) >> ( 2*8)) & 0xFF] ^ S2[((c) >> (4*8))&0xFF] ^ S3[((c) >> ( 6*8)) & 0xFF]
@@ -74,14 +82,28 @@ def fm(a, b, c, x, m):
 def keySchedule(x):
 
     # allf = 0xFFFFFFFFFFFFFFFF
-
     # x[0] = x[0] - (x[7] ^ 0xA5A5A5A5A5A5A5A5)
     # x[1] = x[1] ^ x[0]
     # x[2] = (x[2] + x[1])
 
-    # x[3] = (x[3] - (x[2] ^ (~x[1]&allf) << 19))
-    # x[4] =  x[4] ^ x[3]
+    # # X3 is X3 min X2 XOR met de binary complement van X1 << 19 
+    # x[3] = x[3] - (x[2] ^ ((~x[1]&allf) << 19))
+    # x[4] = x[4] ^ x[3]
+    # x[5] = x[5] + x[4]
+    # x[6] = x[6] - (x[5] ^ ((~x[4]&allf) >> 23))
+    # x[7] = x[7] ^ x[6]
+    
+    # x[0] = x[0] + x[7]
+    # x[1] = x[1] - (x[0] ^ ((~x[7]&allf) << 19))
+    # x[2] = x[2] ^ x[1]
+    # x[3] = x[3] + x[2]
+    # x[4] = x[4] - (x[3] ^ ((~x[2]&allf) >> 23))
+    # x[5] = x[5] ^ x[4]
+    # x[6] = x[6] + x[5]
+    # x[7] = x[7] - (x[6] ^ 0x0123456789ABCDEF)
 
+
+    # Dit stukje is een voorbeeld gevonden op internet.
     allf = 0xFFFFFFFFFFFFFFFF
     x[0] = (x[0] - (x[7] ^ 0xA5A5A5A5A5A5A5A5)&allf ) & allf
     x[1] ^= x[0]
@@ -128,5 +150,6 @@ X = chunkInput(inputBits, len(inputString))
 for chunk in X:
     (a,b,c) = outerRound(chunk)
 
-result = frombits(intToBitArray(a) + intToBitArray(b) + intToBitArray(c))
-print(result)
+result = "%016X%016X%016X" % (a, b, c)
+print(result)   
+
