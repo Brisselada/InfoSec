@@ -1,7 +1,6 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
 
 public class RSA {
 
@@ -60,13 +59,37 @@ public class RSA {
         return x;
     }
 
+    private static int[] egcd(int x, int y) {
+        int[] result = new int[3];
+        int floordiv;
+        if (y == 0) {
+            result[0] = x;
+            result[1] = 1;
+            result[2] = 0;
+        } else {
+            floordiv = x / y;
+            result = egcd(y, x % y);
+            int temp = result[1] - floordiv * result[2];
+            result[1] = result[2];
+            result[2] = temp;
+        }
+        return result;
+    }
+
+//    private static double FindSmallerCoprime(double n) {
+//        for (double e = 2; e < n; e++) {
+//            double[] gcd = egcd(n, e);
+//            if (gcd[0] == 1) {
+//                return e;
+//            }
+//        }
+//        return -1;
+//    }
+
     public static String RSACipher(boolean encrypt, double p, double q, double e, String inputText) {
         double N = p * q;
-        double modulo = (p - 1) * (q - 1);
-
-        // Private key:
-        double d = modInverse(e, modulo);
-        // Public key: (N, e)
+        double phiN = (p - 1) * (q - 1);
+        double d = -1;
 
         StringBuilder results = new StringBuilder();
 
@@ -74,11 +97,23 @@ public class RSA {
         for (String line : inputText.split("\n")) {
             if (encrypt) {
                 double M = Double.parseDouble(line);
-                double C = RSA.ChineseRemainder(M, e, N, p, q);
+                double C = RSA.exp(M, e, N);
+//                double C = RSA.ChineseRemainder(M, e, N, p, q);
                 results.append((int) C).append('\n');
             } else {
+
+                if (d == -1) {
+                    int[] x = egcd((int) e, (int) phiN);
+                    d = x[1];
+
+                    if(d < 0) {
+                        d = d + phiN;
+                    }
+                }
+
                 double C = Double.parseDouble(line);
-                double M = RSA.ChineseRemainder(C, d, N, p, q);
+                double M = RSA.exp(C, d, N);
+//                double M = RSA.ChineseRemainder(C, d, N, p, q);
                 results.append((int) M).append('\n');
             }
         }
@@ -101,12 +136,9 @@ public class RSA {
 
 
     private static double ChineseRemainderExponent(double number, double exponent, double modulo) {
-        if (isPrime(modulo)) {
-            double reducedExponent = modulo(exponent, modulo - 1);
-            double reducedNumber = modulo(number, modulo);
-            return repeatedSquare(reducedNumber, reducedExponent, modulo);
-        }
-        return repeatedSquare(number, exponent, modulo);
+        double reducedExponent = modulo(exponent, modulo - 1);
+        double reducedNumber = modulo(number, modulo);
+        return exp(reducedNumber, reducedExponent, modulo);
     }
 
     private static double GCD(double a, double b)
@@ -117,47 +149,47 @@ public class RSA {
         return GCD(b, a % b);
     }
 
-    private static double LCM(double gcd, double b[], double n)
+    private static double LCM(double gcd, double[] b)
     {
         double total = 1;
 
-        for (int k = 0; k < n; k++)
+        for (int k = 0; k < (double) 2; k++)
             total *= b[k];
 
         return total/gcd;
     }
 
 
-    private static double solveSimultaneousPairs(double a[], double b[], double n)
+    private static double solveSimultaneousPairs(double[] a, double[] b)
     {
         double c = 1;
-        for (int k = 0; k < n; k++)
+        for (int k = 0; k < (double) 2; k++)
             c *= b[k];
 
         double gcd = 0;
-        for (int k = 0; k < n; k++)
+        for (int k = 0; k < (double) 2; k++)
             gcd = GCD(gcd, b[k]);
 
-        for (int k = 0; k < n; k++)
+        for (int k = 0; k < (double) 2; k++)
         {
             if ((a[k] % 2 == 1) && (b[k] % 2 == 0))
             {
-                for (int j = k + 1; j < n; j++)
+                for (int j = k + 1; j < (double) 2; j++)
                     if ((a[j] % 2 == 0) && (b[j] % 2 == 0))
                         return -1;	  // no solution
             }
         }
 
-        double lcm = LCM(gcd, b, n);
+        double lcm = LCM(gcd, b);
 
         for (int k = 0; k < lcm; k++)
         {
             int j;
-            for (j = 0; j < n; j++)
+            for (j = 0; j < (double) 2; j++)
                 if (k % b[j] != a[j])
                     break;
 
-            if (j == n)
+            if (j == (double) 2)
             {
                 return k;
             }
@@ -166,26 +198,11 @@ public class RSA {
         return -1;	 // no solution
     }
 
-    private static HashMap<String, Double> hashmap = new HashMap<String, Double>();
-
     private static double ChineseRemainder(double C, double d, double N, double p, double q) {
-        String key = "" + C + d + N + p + q;
-        if (hashmap.containsKey(key)) {
-            return hashmap.get(key);
-        }
-        if (isRelativelyPrime(p, q)){
+        double m1 = ChineseRemainderExponent(C, d, p);
+        double m2 = ChineseRemainderExponent(C, d, q);
 
-            double m1 = ChineseRemainderExponent(C, d, p);
-            double m2 = ChineseRemainderExponent(C, d, q);
-
-            double result = solveSimultaneousPairs(new double[]{m1, m2}, new double[] {p, q}, 2);
-
-            hashmap.put("" + C + d + N + p + q, result);
-            return result;
-
-        } else {
-            return RSA.repeatedSquare(C, d, N);
-        }
+        return solveSimultaneousPairs(new double[]{m1, m2}, new double[] {p, q});
     }
 
     /***
@@ -222,6 +239,24 @@ public class RSA {
         return !notPrime;
     }
 
+    private static double exp(double a, double b, double modulo) {
+        if (b == 0) {
+            return 1 % modulo;
+        }
+
+        if (b == 1) {
+            return a % modulo;
+        }
+
+        // if b is odd
+        if (b % 2 != 0) {
+            return ((a % modulo) * exp(a, b -1, modulo) % modulo);
+        }
+
+        double result = exp(a, b /2, modulo);
+        return (result * result) % modulo;
+    }
+
     private static double repeatedSquare(double a, double b, double modulo) {
         char[] binary = ("0" + Long.toBinaryString((long) b)).toCharArray();
 
@@ -234,6 +269,7 @@ public class RSA {
 
         return currentValue;
     }
+
 
     /**
      * Reads the line with a timeout
