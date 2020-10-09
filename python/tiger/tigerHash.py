@@ -5,10 +5,11 @@ import math
 import time
 from operator import ixor
 import array
+import re
 
 def bitArrayToBytes(bitArray):
-    return [sum([byte[b] << b for b in range(0,8)])
-            for byte in zip(*(iter(bitArray),) * 8)]
+    return [sum([byte[b] << b for b in range(0,64)])
+            for byte in zip(*(iter(bitArray),) * 64)]
 
 def tobits(s):
     result = []
@@ -127,8 +128,8 @@ def keySchedule(x):
     return x
 
 def outerRound(Wi):
-
-    Wi= Wi.decode("utf-8")
+    
+    Wi = Wi.decode("utf-8")
     Wi = tobits(Wi)
     Wi = bitArrayToBytes(Wi)
 
@@ -147,17 +148,27 @@ def outerRound(Wi):
 
     return (a,b,c)
 
+
+def tigerHash(X):
+    for chunk in X:
+        (a,b,c) = outerRound(chunk)
+    result = "%016X%016X%016X" % (a, b, c)
+    return result 
+
 def main():
 
     inputbytes = bytearray(input(), "utf-8")
 
     X = chunkInput(inputbytes)
 
-    for chunk in X:
-        (a,b,c) = outerRound(chunk)
+    result = tigerHash(X)
+    print(result)
 
-    result = "%016X%016X%016X" % (a, b, c)
-    print(result)   
+    # printChunk(a)
+    # printChunk(b)
+    # printChunk(c)
+    # hex
+    # print(result)
  
  
 main()
