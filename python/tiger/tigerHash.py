@@ -1,12 +1,14 @@
 from sboxes import S0, S1, S2, S3
+import sys
 import itertools
 import math
+import time
 from operator import ixor
 import array
 
 def bitArrayToBytes(bitArray):
-    return [sum([byte[b] << b for b in range(0,64)])
-            for byte in zip(*(iter(bitArray),) * 64)]
+    return [sum([byte[b] << b for b in range(0,8)])
+            for byte in zip(*(iter(bitArray),) * 8)]
 
 def tobits(s):
     result = []
@@ -30,22 +32,23 @@ def intToBitArray(input):
         res.append(int(c))
     return res   
 
-def chunkInput(array, messageLength):
-    messageLength = intToBitArray(messageLength * 8)
-    array.append(1)
+def chunkInput(bytesInput):
 
-    while((len(array) + len(messageLength)) % 512 != 0):
-        array.append(0)
+    messageLength = len(bytesInput)
+    bytesInput.append(0x01)
 
-    array = array + messageLength
+    while(len(bytesInput) % 64 != 56):
+        bytesInput.append(0x00)
+    
+    messageLength64 = bytes([messageLength]) * 8
+    bytesInput += messageLength64
 
-    amountOfCunks = int(len(array) / 512)
 
     chunks = []
-    current = 0
-    for x in range(amountOfCunks):
-        chunks.append(array[current: current + 512])
-        current += 512
+    amountOfChunks = math.ceil(len(bytesInput) / 64)
+    for i in range(int(amountOfChunks)):
+        chunks.append(bytesInput[i*64:(i+1)*64])
+
     return chunks
 
 def Fround(a, b, c, Wi, m):
@@ -123,9 +126,11 @@ def keySchedule(x):
     x[7] = (x[7] - (x[6] ^ 0x0123456789ABCDEF)&allf ) & allf
     return x
 
-def outerRound(W):
+def outerRound(Wi):
 
-    Wi = bitArrayToBytes(W)
+    Wi= Wi.decode("utf-8")
+    Wi = tobits(Wi)
+    Wi = bitArrayToBytes(Wi)
 
     # initial values a, b and c
     a = 0x0123456789ABCDEF
@@ -142,14 +147,17 @@ def outerRound(W):
 
     return (a,b,c)
 
-inputString = input()
-inputBits = tobits(inputString)
+def main():
 
-X = chunkInput(inputBits, len(inputString))
+    inputbytes = bytearray(input(), "utf-8")
 
-for chunk in X:
-    (a,b,c) = outerRound(chunk)
+    X = chunkInput(inputbytes)
 
-result = "%016X%016X%016X" % (a, b, c)
-print(result)   
+    for chunk in X:
+        (a,b,c) = outerRound(chunk)
 
+    result = "%016X%016X%016X" % (a, b, c)
+    print(result)   
+ 
+ 
+main()
