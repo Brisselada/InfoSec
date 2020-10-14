@@ -1,6 +1,7 @@
 from sboxes import S0, S1, S2, S3
 import struct
 import math
+import sys
 
 def chunkInput(bytesInput):
 
@@ -93,6 +94,9 @@ def tigerHash(X):
         (a,b,c) = outerRound(chunk, a, b, c)
     return (a, b, c) 
 
+def printIntAsBytes(value):
+    sys.stdout.buffer.write(value.to_bytes(8, byteorder='big'))
+
 def main():
 
     s = input()
@@ -104,7 +108,8 @@ def main():
 
     (a, b, c) = tigerHash(X)
 
-    # print in hex, should be binary.
-    print("%016X%016X%016X" % (a, b, c))
+    printIntAsBytes(a)
+    printIntAsBytes(b)
+    printIntAsBytes(c)
  
 main()
