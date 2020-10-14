@@ -94,8 +94,12 @@ def tigerHash(X):
         (a,b,c) = outerRound(chunk, a, b, c)
     return (a, b, c) 
 
-def printIntAsBytes(value):
-    sys.stdout.buffer.write(value.to_bytes(8, byteorder='big'))
+def printResult(a, b, c):
+    a = a.to_bytes(8, byteorder='big')
+    b = b.to_bytes(8, byteorder='big')
+    c = c.to_bytes(8, byteorder='big')
+    res = a + b + c
+    sys.stdout.buffer.write(res)
 
 def main():
 
@@ -108,8 +112,6 @@ def main():
 
     (a, b, c) = tigerHash(X)
 
-    printIntAsBytes(a)
-    printIntAsBytes(b)
-    printIntAsBytes(c)
+    printResult(a, b, c)
  
 main()
