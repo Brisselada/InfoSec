@@ -659,9 +659,13 @@ def printHex(a,b,c):
 
 if __name__ == '__main__':
 	try:
-		lines = sys.stdin.buffer.read()
-		
-		lines = lines.decode("utf-8") 
+        # Voor eigen input:
+		inputBytes = sys.stdin.buffer.readline().strip()
+
+        # Voor themis:
+		# inputBytes = sys.stdin.buffer.read()
+
+		lines = "".join(map(chr, inputBytes))
 		(a,b,c) = hash(lines)
 		# printHex(a,b,c)
 		printResult(a,b,c)
