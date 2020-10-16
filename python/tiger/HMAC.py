@@ -1,6 +1,7 @@
-import sys
 import array
 import struct
+import sys
+import sched, time
 
 S0 = [ 0x02AAB17CF7E90C5E   ,    0xAC424B03E243A8EC   ,
     0x72CD5BE30DD5FCD3   ,    0x6D019B93F6F97F3A   ,
@@ -520,14 +521,15 @@ S3 = [ 0x5B0E608526323C55   ,    0x1A46C1A9FA1B59F5   ,
 
 
 def inner_round(a, b, c, x, m):
-    c ^= x
-    c &= 0xffffffffffffffff
-    a -= S0[((c) >> (0*8))&0xFF] ^ S1[((c) >> ( 2*8)) & 0xFF] ^ S2[((c) >> (4*8))&0xFF] ^ S3[((c) >> ( 6*8)) & 0xFF]
-    b += S3[((c) >> (1*8))&0xFF] ^ S2[((c) >> ( 3*8)) & 0xFF] ^ S1[((c) >> (5*8))&0xFF] ^ S0[((c) >> ( 7*8)) & 0xFF]
-    b *= m
-    a &= 0xffffffffffffffff
-    b &= 0xffffffffffffffff
-    c &= 0xffffffffffffffff
+    mask = 0xffffffffffffffff
+    c ^= x & mask
+    c &= mask
+    a -= S0[((c) >> (0*8))&0xFF] ^ S1[((c) >> ( 2*8)) & 0xFF] ^ S2[((c) >> (4*8))&0xFF] ^ S3[((c) >> ( 6*8)) & 0xFF] & mask
+    b += S3[((c) >> (1*8))&0xFF] ^ S2[((c) >> ( 3*8)) & 0xFF] ^ S1[((c) >> (5*8))&0xFF] ^ S0[((c) >> ( 7*8)) & 0xFF] & mask
+    b *= m & mask
+    a &= mask
+    b &= mask
+    c &= mask
     return (a,b,c)
 
 
@@ -599,59 +601,68 @@ def outer_round(message, a, b, c):
 	return (a,b,c)
 
 
-def hash(message):
-	i = 0
-
+def hash(inputBytes):
 	a = 0x0123456789ABCDEF
 	b = 0xFEDCBA9876543210
 	c = 0xF096A5B4C3B2E187
+
+	intList = list()
+	for b in inputBytes:
+		intList.append(b)
 	
-	length = len(message)
-	while i < length - 63:
-		(a,b,c) = outer_round(message[i:i + 64], a, b, c)
-		i += 64
-		
-	inputBytes = array.array('b', message[i:].encode())
-	j = len(inputBytes)
-	inputBytes.append(0x01)
-	j += 1
+	length = len(intList)
+	intList.append(0x01)
 
-	while j & 7 != 0:
-		inputBytes.append(0x00)
-		j += 1
+	while len(intList) % 64 != 56:
+		intList.append(0x00)
 
-	if j > 56:
-		while j < 64:
-			inputBytes.append(0x00)
-			j += 1
-		(a,b,c) = outer_round(inputBytes, a, b, c)
-		j = 0
+	multipliedLength = (length * 8).to_bytes(8, byteorder='little')
 
-	inputBytes.extend([0 for i in range(0, 56 - j)])
-	while j < 56:
-		inputBytes[j] = 0
-		j += 1
-	while len(inputBytes) > 56:
-		inputBytes.pop(56)
+	for bi in multipliedLength:
+		intList.append(bi)
 
-	multipliedLength = struct.pack('Q', length << 3)
-	inputBytes.frombytes(multipliedLength)
-	(a,b,c) = outer_round(inputBytes, a, b, c)
-    
+	amountOfChunks = len(intList) / 64
+
+	for i in range(int(amountOfChunks)):
+		(a,b,c) = outer_round(intList[i*64:(i+1)*64], a, b, c)
+
 	return resultToBytes(a,b,c)
 
 
-def resultToBytes(a, b, c):
+
+def resultToBytes(a,b,c):
+    a = a.to_bytes(8, byteorder='little')
+    b = b.to_bytes(8, byteorder='little')
+    c = c.to_bytes(8, byteorder='little')
+    return a + b + c
+
+def printResult(a, b, c):
     a = a.to_bytes(8, byteorder='little')
     b = b.to_bytes(8, byteorder='little')
     c = c.to_bytes(8, byteorder='little')
     res = a + b + c
-    return res
+    sys.stdout.buffer.write(res)
 
-def hashBytes(bytes):
-    return hash("".join(map(chr, bytes)))
 
-inputBytes = sys.stdin.buffer.readline()
+def printHex(a,b,c):
+	a = a.to_bytes(8, byteorder='little')
+	b = b.to_bytes(8, byteorder='little')
+	c = c.to_bytes(8, byteorder='little')
+	res = a + b + c
+	print(res.hex())
+
+
+def bytesToIntList(inputBytes):
+    result = list()
+    for b in inputBytes:
+        result.append(b)
+    return result
+
+# Voor eigen input:
+inputBytes = sys.stdin.buffer.readline().strip()
+
+# Voor themis:
+# inputBytes = sys.stdin.buffer.read()
 
 key = []
 message = []
@@ -664,14 +675,16 @@ seperator = False
 seperatorByte = 0xFF
 keyLength = 0
 
-for i in range(len(inputBytes)):
-    if inputBytes[i] == seperatorByte:
+inputBytes = bytesToIntList(inputBytes)
+
+for i in range(len(inputBytes) - 1):
+    if inputBytes[i] == 195 and inputBytes[i+1] == 191:
         break
-    keyLength = keyLength + 1
+    keyLength = i + 1
 
 
 key = inputBytes[0:keyLength]
-message = inputBytes[keyLength+1:]
+message = inputBytes[keyLength+2:]
 
 while len(key) < 64:
     key += (0x00).to_bytes(1, byteorder='little')
@@ -681,14 +694,16 @@ block_size = 64
 
 keyInt = int.from_bytes(key, byteorder='little')
 
-o_key_pad = keyInt ^ int.from_bytes(bytearray((0x5c,)) * block_size, byteorder='little')
-i_key_pad = keyInt ^ int.from_bytes(bytearray((0x36,)) * block_size, byteorder='little')
+allf = 0xFFFFFFFFFFFFFFFF
+
+o_key_pad = keyInt ^ int.from_bytes(bytearray((0x5c,)) * block_size, byteorder='little') & allf
+i_key_pad = keyInt ^ int.from_bytes(bytearray((0x36,)) * block_size, byteorder='little') & allf
 
 
-paramsA = i_key_pad + int.from_bytes(message, byteorder='little')
-resA = hashBytes(paramsA.to_bytes(64, byteorder='little'))
+paramsA = i_key_pad + int.from_bytes(message, byteorder='little') & allf
+resA = hash(paramsA.to_bytes(64, byteorder='little'))
 
-paramsB = o_key_pad +  int.from_bytes(resA, byteorder='little')
-result = hashBytes(paramsB.to_bytes(64, byteorder='little'))
+paramsB = o_key_pad + int.from_bytes(resA, byteorder='little') & allf
+result = hash(paramsB.to_bytes(64, byteorder='little'))
 
 sys.stdout.buffer.write(result)

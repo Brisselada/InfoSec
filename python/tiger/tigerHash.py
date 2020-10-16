@@ -605,22 +605,26 @@ def hash(inputBytes):
 	a = 0x0123456789ABCDEF
 	b = 0xFEDCBA9876543210
 	c = 0xF096A5B4C3B2E187
-	
-	length = len(inputBytes)
-	inputBytes.append(0x01)
 
-	while len(inputBytes) % 64 != 56:
-		inputBytes.append(0x00)
+	intList = list()
+	for b in inputBytes:
+		intList.append(b)
+	
+	length = len(intList)
+	intList.append(0x01)
+
+	while len(intList) % 64 != 56:
+		intList.append(0x00)
 
 	multipliedLength = (length * 8).to_bytes(8, byteorder='little')
 
 	for bi in multipliedLength:
-		inputBytes.append(bi)
+		intList.append(bi)
 
-	amountOfChunks = len(inputBytes) / 64
+	amountOfChunks = len(intList) / 64
 
 	for i in range(int(amountOfChunks)):
-		(a,b,c) = outer_round(inputBytes[i*64:(i+1)*64], a, b, c)
+		(a,b,c) = outer_round(intList[i*64:(i+1)*64], a, b, c)
 
 	return (a,b,c)
 
@@ -643,18 +647,18 @@ def printHex(a,b,c):
 if __name__ == '__main__':
 	# try:
 	# Voor eigen input:
-	# inputBytes = sys.stdin.buffer.readline().strip()
+	inputBytes = sys.stdin.buffer.readline().strip()
 
 	# Voor themis:
-	inputBytes = sys.stdin.buffer.read()
+	# inputBytes = sys.stdin.buffer.read()
 
 	intList = list()
 	for b in inputBytes:
 		intList.append(b)
 	# lines = "".join(map(chr, intList))
 	(a,b,c) = hash(intList)
-	# printHex(a,b,c)
-	printResult(a,b,c)
+	printHex(a,b,c)
+	# printResult(a,b,c)
 	# except:
 	# 	(a,b,c) = hash("")
 	# 	printResult(a,b,c)
