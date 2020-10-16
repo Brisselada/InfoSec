@@ -521,15 +521,14 @@ S3 = [ 0x5B0E608526323C55   ,    0x1A46C1A9FA1B59F5   ,
 
 
 def inner_round(a, b, c, x, m):
-    mask = 0xffffffffffffffff
-    c ^= x & mask
-    c &= mask
-    a -= S0[((c) >> (0*8))&0xFF] ^ S1[((c) >> ( 2*8)) & 0xFF] ^ S2[((c) >> (4*8))&0xFF] ^ S3[((c) >> ( 6*8)) & 0xFF] & mask
-    b += S3[((c) >> (1*8))&0xFF] ^ S2[((c) >> ( 3*8)) & 0xFF] ^ S1[((c) >> (5*8))&0xFF] ^ S0[((c) >> ( 7*8)) & 0xFF] & mask
-    b *= m & mask
-    a &= mask
-    b &= mask
-    c &= mask
+    c ^= x
+    c &= 0xffffffffffffffff
+    a -= S0[((c) >> (0*8))&0xFF] ^ S1[((c) >> ( 2*8)) & 0xFF] ^ S2[((c) >> (4*8))&0xFF] ^ S3[((c) >> ( 6*8)) & 0xFF]
+    b += S3[((c) >> (1*8))&0xFF] ^ S2[((c) >> ( 3*8)) & 0xFF] ^ S1[((c) >> (5*8))&0xFF] ^ S0[((c) >> ( 7*8)) & 0xFF]
+    b *= m
+    a &= 0xffffffffffffffff
+    b &= 0xffffffffffffffff
+    c &= 0xffffffffffffffff
     return (a,b,c)
 
 
@@ -601,26 +600,44 @@ def outer_round(message, a, b, c):
 	return (a,b,c)
 
 
-def hash(inputBytes):
+def hash(message):
+	i = 0
+
 	a = 0x0123456789ABCDEF
 	b = 0xFEDCBA9876543210
 	c = 0xF096A5B4C3B2E187
 	
-	length = len(inputBytes)
+	length = len(message)
+	while i < length - 63:
+		(a,b,c) = outer_round(message[i:i + 64], a, b, c)
+		i += 64
+		
+	inputBytes = array.array('b', message[i:].encode())
+	j = len(inputBytes)
 	inputBytes.append(0x01)
+	j += 1
 
-	while len(inputBytes) % 64 != 56:
+	while j & 7 != 0:
 		inputBytes.append(0x00)
+		j += 1
 
-	multipliedLength = (length * 8).to_bytes(8, byteorder='little')
+	if j > 56:
+		while j < 64:
+			inputBytes.append(0x00)
+			j += 1
+		(a,b,c) = outer_round(inputBytes, a, b, c)
+		j = 0
 
-	for bi in multipliedLength:
-		inputBytes.append(bi)
+	inputBytes.extend([0 for i in range(0, 56 - j)])
+	while j < 56:
+		inputBytes[j] = 0
+		j += 1
+	while len(inputBytes) > 56:
+		inputBytes.pop(56)
 
-	amountOfChunks = len(inputBytes) / 64
-
-	for i in range(int(amountOfChunks)):
-		(a,b,c) = outer_round(inputBytes[i*64:(i+1)*64], a, b, c)
+	multipliedLength = struct.pack('Q', length << 3)
+	inputBytes.frombytes(multipliedLength)
+	(a,b,c) = outer_round(inputBytes, a, b, c)
 
 	return (a,b,c)
 
@@ -641,20 +658,17 @@ def printHex(a,b,c):
 	print(res.hex())
 
 if __name__ == '__main__':
-	# try:
-	# Voor eigen input:
-	# inputBytes = sys.stdin.buffer.readline().strip()
+	try:
+        # Voor eigen input:
+		inputBytes = sys.stdin.buffer.readline().strip()
 
-	# Voor themis:
-	inputBytes = sys.stdin.buffer.read()
+        # Voor themis:
+		# inputBytes = sys.stdin.buffer.read()
 
-	intList = list()
-	for b in inputBytes:
-		intList.append(b)
-	# lines = "".join(map(chr, intList))
-	(a,b,c) = hash(intList)
-	# printHex(a,b,c)
-	printResult(a,b,c)
-	# except:
-	# 	(a,b,c) = hash("")
-	# 	printResult(a,b,c)
+		lines = "".join(map(chr, inputBytes))
+		(a,b,c) = hash(lines)
+		# printHex(a,b,c)
+		printResult(a,b,c)
+	except:
+		(a,b,c) = hash("")
+		printResult(a,b,c)
