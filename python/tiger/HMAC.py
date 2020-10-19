@@ -659,10 +659,10 @@ def bytesToIntList(inputBytes):
     return result
 
 # Voor eigen input:
-inputBytes = sys.stdin.buffer.readline().strip()
+# inputBytes = sys.stdin.buffer.readline().strip()
 
 # Voor themis:
-# inputBytes = sys.stdin.buffer.read()
+inputBytes = sys.stdin.buffer.read()
 
 key = []
 message = []
@@ -675,20 +675,20 @@ seperator = False
 seperatorByte = 0xFF
 keyLength = 0
 
-inputBytes = bytesToIntList(inputBytes)
-
-for i in range(len(inputBytes) - 1):
-    if inputBytes[i] == 195 and inputBytes[i+1] == 191:
+for b in inputBytes:
+    if b == seperatorByte:
         break
-    keyLength = i + 1
+    keyLength += 1
 
 
 key = inputBytes[0:keyLength]
-message = inputBytes[keyLength+2:]
+message = inputBytes[keyLength+1:]
+
+key = bytesToIntList(key)
+message = bytesToIntList(message)
 
 while len(key) < 64:
-    key += (0x00).to_bytes(1, byteorder='little')
-
+    key.append(0x00)
 
 block_size = 64
 
@@ -696,14 +696,13 @@ keyInt = int.from_bytes(key, byteorder='little')
 
 allf = 0xFFFFFFFFFFFFFFFF
 
-o_key_pad = keyInt ^ int.from_bytes(bytearray((0x5c,)) * block_size, byteorder='little') & allf
-i_key_pad = keyInt ^ int.from_bytes(bytearray((0x36,)) * block_size, byteorder='little') & allf
+o_key_pad = int.from_bytes(bytearray((0x5c,)) * block_size, byteorder='little')
+i_key_pad = int.from_bytes(bytearray((0x36,)) * block_size, byteorder='little')
 
+paramsA = bytesToIntList((keyInt ^ i_key_pad & allf).to_bytes(64, byteorder='little')) + message
+resA = hash(paramsA)
 
-paramsA = i_key_pad + int.from_bytes(message, byteorder='little') & allf
-resA = hash(paramsA.to_bytes(64, byteorder='little'))
-
-paramsB = o_key_pad + int.from_bytes(resA, byteorder='little') & allf
-result = hash(paramsB.to_bytes(64, byteorder='little'))
+paramsB = bytesToIntList((keyInt ^ o_key_pad & allf).to_bytes(64, byteorder='little')) + bytesToIntList(resA)
+result = hash(paramsB)
 
 sys.stdout.buffer.write(result)
