@@ -658,20 +658,24 @@ def bytesToIntList(inputBytes):
         result.append(b)
     return result
 
+def xorBytes(a, b):
+    return bytes(a ^ b for a, b in zip(a, b))
+
 # Voor eigen input:
-# inputBytes = sys.stdin.buffer.readline().strip()
+inputBytes = sys.stdin.buffer.readline().strip()
 
 # Voor themis:
-inputBytes = sys.stdin.buffer.read()
+# inputBytes = sys.stdin.buffer.read()
 
 key = []
 message = []
 
 seperator = False
 
-# test: q
+# test seperator: q
 # seperatorByte = 0x71
 
+# real seperator
 seperatorByte = 0xFF
 keyLength = 0
 
@@ -684,25 +688,15 @@ for b in inputBytes:
 key = inputBytes[0:keyLength]
 message = inputBytes[keyLength+1:]
 
-key = bytesToIntList(key)
-message = bytesToIntList(message)
-
 while len(key) < 64:
-    key.append(0x00)
+    key += (0x00).to_bytes(1, byteorder='little')
 
 block_size = 64
 
-keyInt = int.from_bytes(key, byteorder='little')
+o_key_pad = xorBytes(key, bytearray((0x5c,)) * block_size)
+i_key_pad = xorBytes(key, bytearray((0x36,)) * block_size)
 
-allf = 0xFFFFFFFFFFFFFFFF
-
-o_key_pad = int.from_bytes(bytearray((0x5c,)) * block_size, byteorder='little')
-i_key_pad = int.from_bytes(bytearray((0x36,)) * block_size, byteorder='little')
-
-paramsA = bytesToIntList((keyInt ^ i_key_pad & allf).to_bytes(64, byteorder='little')) + message
-resA = hash(paramsA)
-
-paramsB = bytesToIntList((keyInt ^ o_key_pad & allf).to_bytes(64, byteorder='little')) + bytesToIntList(resA)
-result = hash(paramsB)
+resA = hash(i_key_pad + message)
+result = hash(o_key_pad + resA)
 
 sys.stdout.buffer.write(result)
